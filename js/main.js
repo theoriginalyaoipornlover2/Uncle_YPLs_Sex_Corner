@@ -1,567 +1,1191 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yaoi Porn Lover's Cave of Pleasure - 3D Edition</title>
-    
-    <!-- ✅ CSS: Rutas relativas (sin la barra / al inicio) -->
-    <link rel="stylesheet" href="css/base.css">
-    
-    <!-- Si separaste más archivos CSS, agrégalos aquí en este orden: -->
-    <!-- <link rel="stylesheet" href="css/layout.css"> -->
-    <!-- <link rel="stylesheet" href="css/components.css"> -->
-    <!-- <link rel="stylesheet" href="css/animations.css"> -->
-</head>
-<body class="sfw-mode">
+/* ================================================================
+   MÓDULO 1: CONFIGURACIÓN TÍTULO 3D Y PALETAS
+   ================================================================ */
+const titleLine1 = "YAOI PORN LOVER'S";
+const titleLine2 = "CAVE OF PLEASURE";
+const palettes = [
+    { name: "Dorado Metálico", class: "palette-gold", colors: null },
+    { name: "Plata Brillante", class: "palette-silver", colors: null },
+    { name: "Arcoíris Fluido", class: "palette-rainbow", colors: null },
+    { name: "Bandera LGBT+", colors: ["#e40303", "#ff8c00", "#ffed00", "#008026", "#004dff", "#750787"] },
+    { name: "Bandera Lesbiana", colors: ["#d52d00", "#ef7627", "#ff9a56", "#ffffff", "#d162a4", "#b55690", "#a30262"] },
+    { name: "Bandera Pansexual", colors: ["#ff218c", "#ffd800", "#21b1ff"] },
+    { name: "Bandera Transgender", colors: ["#5bcefa", "#f5abb9", "#ffffff", "#f5abb9", "#5bcefa"] },
+    { name: "Bandera Bisexual", colors: ["#d60270", "#d60270", "#9b4f96", "#0038a8", "#0038a8"] },
+    { name: "Bandera No-Binaria", colors: ["#fcf434", "#ffffff", "#9c59d1", "#2c2c2c"] },
+    { name: "Bandera Asexual", colors: ["#000000", "#a3a3a3", "#ffffff", "#800080"] }
+];
+let currentPaletteIndex = 0;
 
-    <!-- INTRO / PANTALLA PRINCIPAL TERMINAL KASPER -->
-    <div id="kasper-terminal-overlay">
-        <div class="crt-scanline"></div>
-        <div id="terminal-content">
-            <div id="boot-sequence"></div>
-            <div id="interactive-prompt" style="display: none; margin-top: 15px;">
-                <div id="terminal-banner">
-                    --------------------------------------------------<br>
-                    TERMINAL KASPER v3.01 - VAPORWAVE BIOS<br>
-                    Sistema operativo: DOUZOZ 7 (2007 Original edition)<br>
-                    <span class="error-msg">SYSTEM ERROR: Copia de OS inexistente o no autorizada. Por favor pague con una mamada.</span><br>
-                    --------------------------------------------------<br>
-                    Escribe 'help' para ver la lista de comandos disponibles.<br>&nbsp;
-                </div>
-                <div id="command-history"></div>
-                <div class="input-line">
-                    <span class="prompt-symbol">KASPER:\DOUZOZ7></span>
-                    <input type="text" id="terminal-input" autofocus autocomplete="off" spellcheck="false">
-                </div>
-            </div>
-        </div>
-    </div>
+function build3DTitle() {
+    const container = document.getElementById('title-container');
+    container.innerHTML = '';
+    const line1Div = document.createElement('div');
+    line1Div.className = 'title-line';
+    const line2Div = document.createElement('div');
+    line2Div.className = 'title-line';
+    appendLetters(titleLine1, line1Div);
+    appendLetters(titleLine2, line2Div);
+    container.appendChild(line1Div);
+    container.appendChild(line2Div);
+    applyCurrentPalette();
+}
 
-    <!-- CONTAINER DE APAGADO -->
-    <div id="douzoz-shutdown-screen">
-        <div class="shutdown-dialog">
-            <div class="windows-flag-icon">❖</div>
-            <div class="shutdown-text">DOUZOZ 7</div>
-            <div class="shutdown-subtext">Shutting you up now...</div>
-        </div>
-    </div>
+function appendLetters(text, parentElement) {
+    for (let char of text) {
+        const span = document.createElement('span');
+        span.className = 'char-3d';
+        span.innerText = char === ' ' ? '\u00A0' : char;
+        parentElement.appendChild(span);
+    }
+}
 
-    <div class="scanline-overlay"></div>
+function applyCurrentPalette() {
+    const container = document.getElementById('title-container');
+    const pal = palettes[currentPaletteIndex];
+    document.getElementById('palette-name').innerText = `PALETA: ${pal.name}`;
+    document.getElementById('hud-scheme').innerText = pal.name.split(' ')[0].toUpperCase();
+    container.className = 'title-3d';
+    const allChars = container.querySelectorAll('.char-3d');
+    if (pal.class) {
+        container.classList.add(pal.class);
+        allChars.forEach(c => { c.style.color = ''; c.style.textShadow = ''; });
+    } else if (pal.colors) {
+        allChars.forEach((c, index) => {
+            const color = pal.colors[index % pal.colors.length];
+            c.style.color = color;
+            c.style.textShadow = `0 1px 0 #111, 0 2px 0 #000, 0 0 12px ${color}`;
+        });
+    }
+}
 
-    <!-- TICKER INFORMATIVO -->
-    <div class="ticker-wrap">
-        <div class="ticker">
-            <div class="ticker-item"><span>MODO ACTUAL:</span> <span id="mode-text-display">SFW (SEGURO)</span></div>
-            <div class="ticker-item"><span>LOGROS UNLOCKED:</span> <span id="achievements-count">0/8</span></div>
-            <div class="ticker-item"><span>BANDERA:</span> PRESIONA EL TÍTULO 3D PARA CAMBIAR DIVERSITY COLOR</div>
-            <div class="ticker-item"><span>SECRET CODE:</span> PRUEBA INGRESA 'YEYO' EN EL TRANSMISOR</div>
-        </div>
-    </div>
+const titleWrapper = document.getElementById('title-3d-btn');
+titleWrapper.addEventListener('mousemove', (e) => {
+    const rect = titleWrapper.getBoundingClientRect();
+    const x = e.clientX - rect.left - (rect.width / 2);
+    const y = e.clientY - rect.top - (rect.height / 2);
+    titleWrapper.style.transform = `rotateY(${x * 0.05}deg) rotateX(${-y * 0.05}deg)`;
+});
+titleWrapper.addEventListener('mouseleave', () => {
+    titleWrapper.style.transform = `rotateY(0deg) rotateX(0deg)`;
+});
+titleWrapper.addEventListener('click', () => {
+    currentPaletteIndex = (currentPaletteIndex + 1) % palettes.length;
+    applyCurrentPalette();
+    checkAchievement('diversity_explorer');
+    if (currentPaletteIndex === 3) checkAchievement('lgbt_pride');
+});
 
-    <!-- HEADER & TÍTULO 3D -->
-    <header class="header-container">
-        <div class="status-badge-container">
-            <div class="badge btn-nsfw-toggle" id="nsfw-toggle-btn">🔥 NSFW: OFF</div>
-            <div class="badge" id="open-achievements-btn">🏆 LOGROS (<span id="badge-ach-num">0</span>)</div>
-            <div class="badge"><span style="color:var(--neon-green)">●</span> ONLINE</div>
-        </div>
-        <div class="title-3d-wrapper" id="title-3d-btn">
-            <div class="title-3d" id="title-container"></div>
-        </div>
-        <div class="palette-name-tag" id="palette-name">PALETA: DORADO METÁLICO</div>
-    </header>
+/* ================================================================
+   MÓDULO 2: SISTEMA DE LOGROS
+   ================================================================ */
+const achievements = [
+    { id: 'welcome', title: 'Bienvenido a la Cueva', desc: 'Ingresaste a la Cueva de Placer.', icon: '🕯️', unlocked: false },
+    { id: 'diversity_explorer', title: 'Orgullo & Diversidad', desc: 'Cambiaste las banderas tipográficas.', icon: '🌈', unlocked: false },
+    { id: 'lgbt_pride', title: 'Arcoíris Real', desc: 'Activaste la bandera LGBT+.', icon: '👑', unlocked: false },
+    { id: 'nsfw_master', title: 'Modo Fuego', desc: 'Activaste el fondo NSFW 🔥.', icon: '🔥', unlocked: false },
+    { id: 'yeyo_easter', title: 'El Hermano Yeyo', desc: 'Ingresaste el código secreto de la hermandad.', icon: '⚡', unlocked: false },
+    { id: 'time_5min', title: 'Residente Fiel', desc: 'Permaneciste 5 minutos en la cueva.', icon: '⏳', unlocked: false },
+    { id: 'clock_master', title: 'Señor del Tiempo', desc: 'Cambiaste el formato del reloj retro.', icon: '⏰', unlocked: false },
+    { id: 'collector', title: 'Coleccionista Total', desc: 'Desbloqueaste todos los logros.', icon: '💎', unlocked: false }
+];
 
-    <!-- RELOJ SUPREMO -->
-    <div class="supreme-clock-card" id="clock-card-main">
-        <div class="clock-header-bar">
-            <div class="clock-mode-selector">
-                <button class="clk-mode-btn active" onclick="setClockTheme('vaporwave')">📼 VAPOR</button>
-                <button class="clk-mode-btn" onclick="setClockTheme('cyberpunk')">⚡ CYBER</button>
-                <button class="clk-mode-btn" onclick="setClockTheme('analog')">🕰️ ANALOG</button>
-                <button class="clk-mode-btn" onclick="setClockTheme('matrix')">📟 MATRIX</button>
-            </div>
-            <div style="font-family: monospace; font-size: 0.7rem; color: var(--gold);" id="clock-ip-status">🔍 RASTREANDO IP...</div>
-        </div>
+function checkAchievement(id) {
+    const ach = achievements.find(a => a.id === id);
+    if (ach && !ach.unlocked) {
+        ach.unlocked = true;
+        showAchievementToast(ach);
+        updateAchievementsUI();
+    }
+}
 
-        <div class="clock-display-screen theme-vaporwave" id="clock-display-box">
-            <div id="digital-clock-view">
-                <div id="clock-time-text">00:00:00</div>
-                <div id="clock-date-text">CARGANDO FECHA...</div>
-            </div>
-            <div id="analog-clock-view" style="display: none;">
-                <svg viewBox="0 0 100 100" class="analog-svg">
-                    <circle cx="50" cy="50" r="45" class="clock-face" />
-                    <line x1="50" y1="50" x2="50" y2="20" id="hour-hand" class="hand hour" />
-                    <line x1="50" y1="50" x2="50" y2="10" id="minute-hand" class="hand minute" />
-                    <line x1="50" y1="50" x2="50" y2="5" id="second-hand" class="hand second" />
-                    <circle cx="50" cy="50" r="3" fill="var(--gold)" />
-                </svg>
-            </div>
+function showAchievementToast(ach) {
+    document.getElementById('toast-icon').innerText = ach.icon;
+    document.getElementById('toast-title').innerText = `¡LOGRO: ${ach.title.toUpperCase()}!`;
+    document.getElementById('toast-desc').innerText = ach.desc;
+    const toast = document.getElementById('achievement-toast');
+    toast.classList.add('show');
+    if (typeof sfx !== 'undefined') sfx.playAchievement();
+    setTimeout(() => toast.classList.remove('show'), 4000);
+}
 
-            <div class="clock-geo-panel">
-                <div class="geo-info-left">
-                    <div class="ip-row">
-                        <span id="user-flag">🌐</span>
-                        <span id="user-ip-display" class="ip-highlight">000.000.000.000</span>
-                    </div>
-                    <div id="user-location-display" class="geo-text">Detectando coordenadas...</div>
-                </div>
-                <div class="geo-info-right">
-                    <div id="user-weather-display" class="weather-text">--°C ☁️</div>
-                    <div id="user-isp-display" class="isp-text">ISP: Buscando...</div>
-                </div>
-            </div>
-        </div>
+function updateAchievementsUI() {
+    const count = achievements.filter(a => a.unlocked).length;
+    document.getElementById('achievements-count').innerText = `${count}/${achievements.length}`;
+    document.getElementById('badge-ach-num').innerText = count;
+    const container = document.getElementById('achievements-list-container');
+    container.innerHTML = '';
+    achievements.forEach(a => {
+        const item = document.createElement('div');
+        item.className = `achieve-item ${a.unlocked ? 'unlocked' : ''}`;
+        item.innerHTML = `
+            <div style="font-size:1.5rem">${a.icon}</div>
+            <div>
+                <div style="font-weight:bold; color:${a.unlocked ? 'var(--neon-green)' : '#aaa'}">${a.title}</div>
+                <div style="font-size:0.7rem">${a.desc}</div>
+            </div>`;
+        container.appendChild(item);
+    });
+    if (count === achievements.length - 1) checkAchievement('collector');
+}
 
-        <div class="anti-stress-panel">
-            <button id="anti-stress-btn" class="stress-btn">
-                💥 BOTÓN ANTI-ESTRÉS <span id="stress-counter-badge">(0 Clicks)</span>
-            </button>
-            <div id="stress-comment" class="stress-comment-box">
-                "Presioná el botón si la vida o el Yeyo te tienen estresado..."
-            </div>
-        </div>
-    </div>
+/* ================================================================
+   MÓDULO 3: TOGGLE SFW / NSFW
+   ================================================================ */
+const nsfwBtn = document.getElementById('nsfw-toggle-btn');
+nsfwBtn.addEventListener('click', () => {
+    if (document.body.classList.contains('sfw-mode')) {
+        document.body.classList.remove('sfw-mode');
+        document.body.classList.add('nsfw-mode');
+        nsfwBtn.innerText = "🔥 NSFW: ON";
+        document.getElementById('hud-bg-mode').innerText = "NSFW FIRE";
+        document.getElementById('mode-text-display').innerText = "NSFW (ACTIVO)";
+        checkAchievement('nsfw_master');
+    } else {
+        document.body.classList.remove('nsfw-mode');
+        document.body.classList.add('sfw-mode');
+        nsfwBtn.innerText = "🔥 NSFW: OFF";
+        document.getElementById('hud-bg-mode').innerText = "SFW SAFE";
+        document.getElementById('mode-text-display').innerText = "SFW (SEGURO)";
+    }
+});
 
-    <div class="system-hud-card">
-        <div style="color:var(--gold); font-size:0.85rem; border-bottom:1px solid rgba(212,175,55,0.3); padding-bottom:4px; display:flex; justify-content:space-between;">
-            <span>MONITOR DE LA CUEVA</span>
-            <span style="color:var(--neon-green)">ACTIVE</span>
-        </div>
-        <div class="hud-metrics">
-            <div class="metric-box">
-                <div class="metric-label">MODO FONDO</div>
-                <div class="metric-val" id="hud-bg-mode">SFW SAFE</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-label">COLOR SCHEME</div>
-                <div class="metric-val" id="hud-scheme">GOLD</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-label">TIEMPO EN CUEVA</div>
-                <div class="metric-val" id="hud-timer">00:00</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-label">EXP LEVEL</div>
-                <div class="metric-val" id="hud-level">LVL 1</div>
-            </div>
-        </div>
-    </div>
+/* ================================================================
+   MÓDULO 4: MODAL LOGROS
+   ================================================================ */
+document.getElementById('open-achievements-btn').addEventListener('click', () => {
+    document.getElementById('modal-achievements').classList.add('active');
+});
+document.getElementById('close-modal-btn').addEventListener('click', () => {
+    document.getElementById('modal-achievements').classList.remove('active');
+});
 
-    <!-- BOTONERA PRINCIPAL -->
-    <main class="button-grid-v2">
-        <a href="ea99.html" class="grid-card-btn gold-master-btn" id="btn-exitos">
-            <div class="cartoon-shimmer"></div>
-            <div class="top-right-sparkle">✨</div>
-            <div class="floating-wealth w-1">🪙</div>
-            <div class="floating-wealth w-2">💰</div>
-            <div class="floating-wealth w-3">₿</div>
-            <div class="floating-wealth w-4">🏆</div>
-            <div class="card-content">
-                <div class="card-icon">👑</div>
-                <div class="card-text-group">
-                    <span class="card-title">GRANDES ÉXITOS</span>
-                    <span class="card-subtitle">Edits Legendarios & Masterpieces</span>
-                </div>
-            </div>
-        </a>
+/* ================================================================
+   MÓDULO 5: AUDIO SINTETIZADOR (Web Audio API)
+   ================================================================ */
+class SoundFX {
+    constructor() {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    playTone(freq, type = 'sine', duration = 0.1) {
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+    }
+    playClick() { this.playTone(800, 'square', 0.05); }
+    playAchievement() {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+            setTimeout(() => this.playTone(freq, 'triangle', 0.15), idx * 80);
+        });
+    }
+}
+const sfx = new SoundFX();
 
-        <a href="chat.html" class="grid-card-btn silver-cyber-btn">
-            <div class="card-content">
-                <div class="card-icon">💬</div>
-                <div class="card-text-group">
-                    <span class="card-title">EL_CHAT</span>
-                    <span class="card-subtitle">Conexión P2P & Transmisiones</span>
-                </div>
-            </div>
-        </a>
+document.querySelectorAll('.char-3d, .custom-btn, .badge').forEach(elem => {
+    elem.addEventListener('mouseenter', () => sfx.playClick());
+});
 
-        <a href="zombie.html" class="grid-card-btn arcade-neon-btn">
-            <div class="card-content">
-                <div class="card-icon">📖</div>
-                <div class="card-text-group">
-                    <span class="card-title">EL ARCADE</span>
-                    <span class="card-subtitle">Zombie Survival & Retos</span>
-                </div>
-            </div>
-        </a>
+/* ================================================================
+   MÓDULO 6: MOTOR DE PARTÍCULAS
+   ================================================================ */
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
 
-        <a href="Donaciones.html" class="grid-card-btn donation-btn">
-            <div class="card-content">
-                <div class="card-icon">❤️</div>
-                <div class="card-text-group">
-                    <span class="card-title">DONACIONES</span>
-                    <span class="card-subtitle">Apoyá el Proyecto del Yeyo</span>
-                </div>
-            </div>
-        </a>
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-        <a href="Dante.html" class="grid-card-btn donation-btn">
-            <div class="card-content">
-                <div class="card-icon">❤️</div>
-                <div class="card-text-group">
-                    <span class="card-title">DONACIONES</span>
-                    <span class="card-subtitle">Apoyá el Proyecto del Yeyo</span>
-                </div>
-            </div>
-        </a>
+class Particle {
+    constructor(x, y) {
+        this.x = x; this.y = y;
+        this.size = Math.random() * 4 + 1;
+        this.speedX = Math.random() * 3 - 1.5;
+        this.speedY = Math.random() * 3 - 1.5;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        this.life = 100;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life -= 2;
+    }
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
 
-        <!-- PLACEHOLDERS -->
-        <div class="grid-card-btn locked-btn" onclick="triggerLockedSound('Laboratorio de IA')">
-            <div class="lock-stripe">CAUTION // EN CONSTRUCCIÓN</div>
-            <div class="card-content">
-                <div class="card-icon">🔒</div>
-                <div class="card-text-group">
-                    <span class="card-title">IA YEYO-BOT</span>
-                    <span class="card-subtitle">Progreso: [45%] • Bloqueado</span>
-                </div>
-            </div>
-        </div>
+window.addEventListener('mousemove', (e) => {
+    if (Math.random() > 0.6) particles.push(new Particle(e.clientX, e.clientY));
+});
 
-        <div class="grid-card-btn locked-btn" onclick="triggerLockedSound('Cine 4K Virtual')">
-            <div class="lock-stripe">CAUTION // EN CONSTRUCCIÓN</div>
-            <div class="card-content">
-                <div class="card-icon">🍿</div>
-                <div class="card-text-group">
-                    <span class="card-title">CUEVA CINEMA 4K</span>
-                    <span class="card-subtitle">Progreso: [12%] • Próximamente</span>
-                </div>
-            </div>
-        </div>
+function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].life <= 0) { particles.splice(i, 1); i--; }
+    }
+    requestAnimationFrame(animateParticles);
+}
+animateParticles();
 
-        <div class="grid-card-btn locked-btn" onclick="triggerLockedSound('Mercado de Renders')">
-            <div class="lock-stripe">CAUTION // EN CONSTRUCCIÓN</div>
-            <div class="card-content">
-                <div class="card-icon">🛍️</div>
-                <div class="card-text-group">
-                    <span class="card-title">BLACK MARKET RENDERS</span>
-                    <span class="card-subtitle">Progreso: [80%] • En Mantenimiento</span>
-                </div>
-            </div>
-        </div>
+/* ================================================================
+   MÓDULO 7: SHELL HACKER (F2 o ~)
+   ================================================================ */
+const shell = document.getElementById('cave-shell');
+const shellInput = document.getElementById('shell-input');
+const shellOutput = document.getElementById('shell-output');
 
-        <div class="grid-card-btn locked-btn" onclick="triggerLockedSound('Sala de Trofeos 3D')">
-            <div class="lock-stripe">CAUTION // EN CONSTRUCCIÓN</div>
-            <div class="card-content">
-                <div class="card-icon">🏛️</div>
-                <div class="card-text-group">
-                    <span class="card-title">MUSEO DE YEYO 3D</span>
-                    <span class="card-subtitle">Progreso: [05%] • Acceso Denegado</span>
-                </div>
-            </div>
-        </div>
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'F2' || e.key === '~') {
+        e.preventDefault();
+        shell.style.display = shell.style.display === 'none' ? 'block' : 'none';
+        if (shell.style.display === 'block') shellInput.focus();
+    }
+});
 
-        <!-- FUN FACTS MODAL -->
-        <div class="sldg-feature-wrapper">
-            <button class="sldg-trigger-btn" id="sldgBtn" aria-label="Abrir Fun facts de leo kasper">
-                <span class="btn-glitch-text">Fun facts de leo kasper</span>
-                <span class="btn-tag">[SHITPOSTING_SLDG.exe]</span>
-            </button>
-            <div class="sldg-modal-overlay" id="sldgModal" role="dialog" aria-hidden="true">
-                <div class="sldg-modal-card">
-                    <div class="sldg-modal-header">
-                        <div class="window-controls">
-                            <span class="dot red"></span>
-                            <span class="dot yellow"></span>
-                            <span class="dot green"></span>
-                        </div>
-                        <span class="window-title">LEO_KASPER_ARCHIVES_v2.012.png</span>
-                        <button class="close-modal-btn" id="closeSldgBtn">&times;</button>
-                    </div>
-                    <div class="sldg-modal-body">
-                        <div class="rage-comic-banner">
-                            <span class="rage-text-top">LE ME...</span>
-                            <h3>PROGRAMANDO UN MONOLITO FRONTEND A LAS 4 AM</h3>
-                            <span class="rage-text-bottom">ALL THE SINGLE BUGS... ALL THE SINGLE BUGS</span>
-                        </div>
-                        <ul class="facts-list">
-                            <li class="fact-item"><span class="fact-index">#01</span><p>Capaz de debugear código en producción mientras escucha "Heroes" de David Bowie sin parpadear una sola vez.</p></li>
-                            <li class="fact-item"><span class="fact-index">#02</span><p>Su relación con VS Code se define legalmente como matrimonio en tres jurisdicciones distintas.</p></li>
-                            <li class="fact-item"><span class="fact-index">#03</span><p>Inventor anónimo del parche mental para ignorar advertencias de deprecación en npm install.</p></li>
-                        </ul>
-                        <div class="sldg-footer-stamp"><span>EL PRRO SUPREMO APPROVED // 2012-2026</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+shellInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const cmd = shellInput.value.trim().toLowerCase();
+        shellInput.value = '';
+        const line = document.createElement('div');
+        line.innerText = `> ${cmd}`;
+        shellOutput.appendChild(line);
+        let res = document.createElement('div');
+        res.style.color = '#39ff14';
+        switch(cmd) {
+            case 'help': res.innerText = 'Comandos: help, unlock, rainbow, clear, matrix'; break;
+            case 'unlock':
+                res.innerText = '¡Modo Dios activado!';
+                achievements.forEach(a => a.unlocked = true);
+                updateAchievementsUI();
+                sfx.playAchievement();
+                break;
+            case 'clear': shellOutput.innerHTML = ''; return;
+            case 'rainbow':
+                res.innerText = 'Acelerando motor gráfico...';
+                document.getElementById('title-container').style.animationDuration = '0.5s';
+                break;
+            default:
+                res.style.color = '#ff3366';
+                res.innerText = `Error: comando '${cmd}' no reconocido.`;
+        }
+        shellOutput.appendChild(res);
+        shellOutput.scrollTop = shellOutput.scrollHeight;
+    }
+});
 
-    <!-- HALL OF FAME -->
-    <section style="width: 100%; max-width: 1100px; margin-bottom: 2.5rem;">
-        <div style="background: linear-gradient(135deg, rgba(15, 52, 39, 0.9), rgba(5, 12, 8, 0.95)); border: 2px solid var(--gold); border-radius: 12px; padding: 20px; box-shadow: 0 0 25px rgba(212, 175, 55, 0.2); backdrop-filter: blur(10px);">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 10px; margin-bottom: 15px;">
-                <h3 style="color: var(--gold); font-family: monospace; letter-spacing: 2px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-                    <span>✨</span> HALL OF FAME: YEYO'S EDITS
-                </h3>
-                <button id="btn-vhs-glitch" style="background: #111; color: var(--neon-green); border: 1px solid var(--neon-green); border-radius: 4px; padding: 4px 10px; font-family: monospace; cursor: pointer; font-size: 0.75rem;">
-                    📼 MODO VHS: OFF
-                </button>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem;">
-                <div class="yeyo-holo-card" data-title="Masterpiece Edit Vol. 1">
-                    <div class="holo-inner">
-                        <div class="holo-shine"></div>
-                        <div style="font-size: 2.5rem; margin-bottom: 8px;">🎬</div>
-                        <div style="color: var(--gold); font-weight: bold; font-size: 0.9rem;">YEYO EDIT #01</div>
-                        <div style="color: #aaa; font-size: 0.75rem; margin-top: 4px;">Edición Limitada • Neón FX</div>
-                    </div>
-                </div>
-                <div class="yeyo-holo-card" data-title="Cyber Cave Remix">
-                    <div class="holo-inner">
-                        <div class="holo-shine"></div>
-                        <div style="font-size: 2.5rem; margin-bottom: 8px;">⚡</div>
-                        <div style="color: var(--gold); font-weight: bold; font-size: 0.9rem;">YEYO EDIT #02</div>
-                        <div style="color: #aaa; font-size: 0.75rem; margin-top: 4px;">Ultra Sync • 60 FPS</div>
-                    </div>
-                </div>
-                <div class="yeyo-holo-card" data-title="The Yaoi Masterwork">
-                    <div class="holo-inner">
-                        <div class="holo-shine"></div>
-                        <div style="font-size: 2.5rem; margin-bottom: 8px;">🔥</div>
-                        <div style="color: var(--gold); font-weight: bold; font-size: 0.9rem;">YEYO EDIT #03</div>
-                        <div style="color: #aaa; font-size: 0.75rem; margin-top: 4px;">Colección Legendaria</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+/* ================================================================
+   MÓDULO 8: TILT HOLOGRÁFICO + VHS GLITCH
+   ================================================================ */
+document.querySelectorAll('.yeyo-holo-card').forEach(card => {
+    const inner = card.querySelector('.holo-inner');
+    const shine = card.querySelector('.holo-shine');
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -15;
+        const rotateY = ((x - centerX) / centerX) * 15;
+        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+        shine.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 80%)`;
+    });
+    card.addEventListener('mouseleave', () => {
+        inner.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+        shine.style.background = '';
+    });
+    card.addEventListener('click', () => {
+        const title = card.getAttribute('data-title');
+        showAchievementToast({ icon: '🎬', title: 'FANÁTICO DE YEYO', desc: `Inspeccionaste: ${title}` });
+        sfx.playAchievement();
+    });
+});
 
-    <!-- CINTA DE NOTICIAS VICE CITY -->
-    <div class="vice-news-ticker-wrap">
-        <div class="vice-badge">🌴 CUEVA NEWS 🌴</div>
-        <div class="vice-ticker-content">
-            <div class="vice-ticker-text">
-                🚨 ÚLTIMO MOMENTO: Estado de YaoiLover y DOUZOZ: en tumbaleja disfrutando el Sol y unos Bailes exóticos 🌴🍹 // ⚡ CUEVA OS V2.0 ACTIVADO: Pager con señales P2P en línea // 🪙 BITCOIN ALCANZA MÁXIMOS EN EL MERCADO NEGRO DEL YEYO // 🎮 ARCADE ZOMBIE ACTUALIZADO CON NUEVOS RETOS //
-            </div>
-        </div>
-    </div>
+const vhsBtn = document.getElementById('btn-vhs-glitch');
+if (vhsBtn) {
+    vhsBtn.addEventListener('click', () => {
+        document.body.classList.toggle('vhs-active');
+        const isActive = document.body.classList.contains('vhs-active');
+        vhsBtn.innerText = isActive ? "📼 MODO VHS: ON" : "📼 MODO VHS: OFF";
+        vhsBtn.style.color = isActive ? "var(--gold)" : "var(--neon-green)";
+        sfx.playClick();
+    });
+}
 
-    <!-- PAGER MULTI-SKIN -->
-    <aside class="pager-master-wrapper" id="pager-main-widget">
-        <div class="pager-skin-selector">
-            <span class="skin-label">SKIN:</span>
-            <button class="skin-btn active" onclick="setPagerSkin('gta3')">🎮 GTA 3</button>
-            <button class="skin-btn" onclick="setPagerSkin('argentina')">🇦🇷 ARGENTINA</button>
-            <button class="skin-btn" onclick="setPagerSkin('matrix')">📟 MATRIX</button>
-            <button class="skin-btn" onclick="setPagerSkin('classic')">📟 90s RETRO</button>
-        </div>
-        <div class="pager-chassis skin-gta3" id="pager-hardware">
-            <div class="pager-antenna"></div>
-            <div class="pager-led" id="pager-signal-led"></div>
-            <div class="pager-sticker" id="pager-sticker-slot">🚕</div>
-            <div class="pager-brand-text" id="pager-brand-display">LIBERTY CITY WIRELESS</div>
-            <div class="pager-lcd-screen backlight-on" id="pager-lcd-box">
-                <div class="lcd-top-bar">
-                    <span id="pager-status-msg">📡 SIGNAL: 100%</span>
-                    <span id="pager-skin-title">LC-PAGER</span>
-                    <span id="pager-time">00:00</span>
-                </div>
-                <div class="lcd-main-display" id="pager-display-text">[LCPD]: "Atención a todas las unidades en Portland Harbor..."</div>
-                <div class="lcd-bottom-bar">
-                    <span id="pager-msg-counter">MSG: 1/5</span>
-                    <span id="pager-battery-text">🔋 98%</span>
-                </div>
-            </div>
-            <div class="pager-controls-row">
-                <button class="pager-phys-btn" onclick="pagerPrevMsg()">◀ ANTERIOR</button>
-                <button class="pager-phys-btn btn-light" onclick="togglePagerLight()">💡 LUZ</button>
-                <button class="pager-phys-btn btn-alert" onclick="playPagerAlert()">🔔 ALERTA</button>
-                <button class="pager-phys-btn" onclick="pagerNextMsg()">SIGUIENTE ▶</button>
-            </div>
-            <div class="pager-keypad-box">
-                <div class="keypad-header">
-                    <input type="text" id="pager-code-input" maxlength="4" placeholder="CÓDIGO (Ej: 911)" readonly>
-                    <button onclick="sendPagerCode()" class="keypad-send-btn">SEND</button>
-                </div>
-                <div class="keypad-grid">
-                    <button onclick="pressPagerKey('1')">1</button>
-                    <button onclick="pressPagerKey('2')">2</button>
-                    <button onclick="pressPagerKey('3')">3</button>
-                    <button onclick="pressPagerKey('4')">4</button>
-                    <button onclick="pressPagerKey('5')">5</button>
-                    <button onclick="pressPagerKey('6')">6</button>
-                    <button onclick="pressPagerKey('7')">7</button>
-                    <button onclick="pressPagerKey('8')">8</button>
-                    <button onclick="pressPagerKey('9')">9</button>
-                    <button onclick="clearPagerKey()" class="keypad-clear-btn">C</button>
-                    <button onclick="pressPagerKey('0')">0</button>
-                    <button onclick="chargePagerBattery()" class="keypad-charge-btn">⚡</button>
-                </div>
-            </div>
-        </div>
-    </aside>
+/* ================================================================
+   MÓDULO 9: SECUENCIA DE ARRANQUE + TERMINAL KASPER
+   ================================================================ */
+const bootLogs = [
+    "KASPER BIOS v3.01 (C) 2007 KASPER CORP.",
+    "Checking System Hardware...",
+    "RAM: 640KB OK (Ext: 16384KB OK)",
+    "Video Adapter: VAPORWAVE 3D FX VELOCITY - OK",
+    "Audio: SOUND BLASTER 16 [DMA 1, IRQ 5] - OK",
+    "GTA3_ENGINE: Checking Cd-Rom... OK",
+    "VICE_CITY_SHELL: Loading ViceCity_Vapor.sys...",
+    "CAVE_CORE: Initializing Pleasure Protocol...",
+    "Mounting OS Partition [DOUZOZ 7]...",
+    "--------------------------------------------------"
+];
+const bootContainer = document.getElementById('boot-sequence');
+const interactivePrompt = document.getElementById('interactive-prompt');
+const terminalInput = document.getElementById('terminal-input');
+const commandHistory = document.getElementById('command-history');
+const terminalOverlay = document.getElementById('kasper-terminal-overlay');
+const shutdownScreen = document.getElementById('douzoz-shutdown-screen');
+let lineIndex = 0;
 
-    <!-- TAPE DECK -->
-    <section class="tape-deck-wrapper" id="cueva-tape-deck">
-        <div class="deck-chassis">
-            <div class="deck-top-bar">
-                <div class="deck-brand">
-                    <span class="brand-logo">CUEVA</span>
-                    <span class="brand-model">TAPE DECK-9000 // HIGH-PRECISION MASTERING</span>
-                </div>
-                <div class="vumeter-box">
-                    <div class="vumeter"><div class="vumeter-needle" id="vu-left"></div><span class="vu-label">L</span></div>
-                    <div class="vumeter"><div class="vumeter-needle" id="vu-right"></div><span class="vu-label">R</span></div>
-                </div>
-                <div class="tape-counter-box">
-                    <span class="counter-digit" id="counter-d1">0</span>
-                    <span class="counter-digit" id="counter-d2">0</span>
-                    <span class="counter-digit" id="counter-d3">0</span>
-                    <button class="counter-reset-btn" onclick="resetTapeCounter()" title="Reset">⟲</button>
-                </div>
-            </div>
-            <div class="deck-door-chamber" id="deck-door">
-                <div class="cassette-body" id="active-cassette">
-                    <div class="cassette-label" id="cassette-label-box">
-                        <span class="cassette-side">A</span>
-                        <span class="cassette-title-text" id="cassette-title-display">TRACK 01 - CUEVA INTRO.MP3</span>
-                    </div>
-                    <div class="cassette-window">
-                        <div class="tape-reel reel-left" id="reel-left">
-                            <div class="tape-spool" id="spool-left"></div>
-                            <div class="spoke-hub"></div>
-                        </div>
-                        <div class="tape-bridge"></div>
-                        <div class="tape-reel reel-right" id="reel-right">
-                            <div class="tape-spool" id="spool-right"></div>
-                            <div class="spoke-hub"></div>
-                        </div>
-                    </div>
-                    <div class="cassette-bottom-holes">
-                        <div class="c-hole"></div><div class="c-hole"></div><div class="c-hole"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="tape-progress-container">
-                <div class="time-display-box">
-                    <span id="current-time-text">00:00</span>
-                    <span class="time-separator">/</span>
-                    <span id="total-duration-text">00:00</span>
-                </div>
-                <div class="progress-bar-wrapper" onclick="seekTapeProgress(event)">
-                    <div class="progress-bar-fill" id="progress-fill"></div>
-                    <div class="progress-scrubber-head" id="scrubber-head"></div>
-                </div>
-            </div>
-            <div class="deck-info-display">
-                <div class="direct-select-box">
-                    <label>TRACK #:</label>
-                    <input type="number" id="direct-track-input" min="1" max="3" value="1" onchange="jumpToTrackNumber(this.value)">
-                </div>
-                <div class="track-marquee">
-                    <span id="deck-song-name">CARGANDO CINTA MAGNÉTICA...</span>
-                </div>
-                <div class="deck-pitch-box">
-                    <label>PITCH/SPEED:</label>
-                    <select id="tape-pitch-select" onchange="changeTapePitch(this.value)">
-                        <option value="0.8">0.8x (Slow)</option>
-                        <option value="1.0" selected>1.0x (Normal)</option>
-                        <option value="1.25">1.25x (Fast)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="piano-keys-row">
-                <button class="piano-btn key-eject" onclick="ejectCassette()">⏏ EJECT</button>
-                <button class="piano-btn key-rew" onclick="rewindTape()">◀◀ REW</button>
-                <button class="piano-btn key-play" id="btn-tape-play" onclick="playTape()">▶ PLAY</button>
-                <button class="piano-btn key-pause" onclick="pauseTape()">❚❚ PAUSE</button>
-                <button class="piano-btn key-stop" onclick="stopTape()">◼ STOP</button>
-                <button class="piano-btn key-ff" onclick="fastForwardTape()">▶▶ FF</button>
-            </div>
-        </div>
-    </section>
+function runBootSequence() {
+    if (lineIndex < bootLogs.length) {
+        const div = document.createElement('div');
+        div.innerText = bootLogs[lineIndex];
+        div.style.color = "#01cdfe";
+        bootContainer.appendChild(div);
+        lineIndex++;
+        setTimeout(runBootSequence, 120);
+    } else {
+        setTimeout(() => {
+            interactivePrompt.style.display = 'block';
+            terminalInput.focus();
+        }, 300);
+    }
+}
+window.addEventListener('load', runBootSequence);
 
-    <!-- TOAST LOGRO -->
-    <div class="achievement-toast" id="achievement-toast">
-        <div class="toast-icon" id="toast-icon">🏆</div>
-        <div>
-            <div class="toast-title" id="toast-title">LOGRO DESBLOQUEADO</div>
-            <div class="toast-desc" id="toast-desc">Has iniciado tu aventura.</div>
-        </div>
-    </div>
+/* ================================================================
+   MÓDULO 10: MOTOR ZORK
+   ================================================================ */
+const ZorkGame = {
+    active: false,
+    currentRoom: 'inicio',
+    inventory: [],
+    rooms: {
+        inicio: {
+            desc: `Te encontrás en una habitación oscura con paredes de concreto crudo. Un monitor CRT parpadea en la esquina.<br>Hay una <span style="color:#05ffa1">puerta_de_hierro</span> al norte y una <span style="color:#05ffa1">mesa</span> de madera podrida.`,
+            exits: { norte: 'pasillo' },
+            items: ['disquete']
+        },
+        pasillo: {
+            desc: `Un pasillo largo e iluminado por tubos fluorescentes intermitentes.<br>Al sur volvés a la habitación. Al este hay una puerta blindada <span style="color:#05ffa1">SERVIDOR_CENTRAL</span>.`,
+            exits: { sur: 'inicio', este: 'servidor' },
+            items: []
+        },
+        servidor: {
+            desc: `Una sala fría llena de racks de servidores de finales de los 90.`,
+            exits: { oeste: 'pasillo' },
+            items: ['llave_master']
+        }
+    },
+    start() {
+        this.active = true;
+        this.currentRoom = 'inicio';
+        return `<span style="color:#ff71ce; font-weight:bold;">=== ZORK I: THE DOUZOZ UNDERGROUND ===</span><br>Comandos: <b>mirar</b>, <b>ir [dir]</b>, <b>tomar [item]</b>, <b>inventario</b>, <b>exit</b><br><br>` + this.getRoomDescription();
+    },
+    getRoomDescription() {
+        const room = this.rooms[this.currentRoom];
+        let itemText = room.items.length > 0 ? `<br><span style="color:#fff1be;">Items:</span> ${room.items.join(', ')}` : '';
+        return room.desc + itemText;
+    },
+    parseCommand(input) {
+        const args = input.toLowerCase().trim().split(' ');
+        const verb = args[0];
+        const noun = args[1];
+        if (verb === 'exit' || verb === 'quit') { this.active = false; return `<span style="color:#ff355e;">Has salido del Zork.</span>`; }
+        if (verb === 'mirar' || verb === 'l') return this.getRoomDescription();
+        if (verb === 'inventario' || verb === 'inv') return this.inventory.length > 0 ? `Llevás: ${this.inventory.join(', ')}` : `Tus bolsillos están vacíos.`;
+        if (verb === 'ir') {
+            const room = this.rooms[this.currentRoom];
+            if (room.exits[noun]) { this.currentRoom = room.exits[noun]; return this.getRoomDescription(); }
+            return `<span style="color:#ff355e;">No podés ir hacia '${noun}'. Salidas: ${Object.keys(room.exits).join(', ')}</span>`;
+        }
+        if (verb === 'tomar' || verb === 'agarra') {
+            const room = this.rooms[this.currentRoom];
+            const idx = room.items.indexOf(noun);
+            if (idx !== -1) { room.items.splice(idx, 1); this.inventory.push(noun); return `Agarraste: <span style="color:#05ffa1;">${noun}</span>`; }
+            return `<span style="color:#ff355e;">No ves '${noun}' acá.</span>`;
+        }
+        return `<span style="color:#ff355e;">Comando no reconocido.</span>`;
+    }
+};
 
-    <!-- MODAL LOGROS -->
-    <div class="modal-achievements" id="modal-achievements">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>🏆 LOGROS DE LA CUEVA</span>
-                <span style="cursor:pointer;" id="close-modal-btn">✖</span>
-            </div>
-            <div id="achievements-list-container"></div>
-        </div>
-    </div>
+/* ================================================================
+   MÓDULO 11: PROCESADOR CENTRAL DE COMANDOS
+   ================================================================ */
+function processCommand(cmd) {
+    const responseDiv = document.createElement('div');
+    responseDiv.style.marginBottom = "10px";
+    if (ZorkGame.active) {
+        responseDiv.innerHTML = ZorkGame.parseCommand(cmd);
+        commandHistory.appendChild(responseDiv);
+        return;
+    }
+    switch (cmd) {
+        case 'help':
+            responseDiv.innerHTML = `<span style="color:#05ffa1;">COMANDOS:</span><br>
+                <b style="color:#ff71ce">start/enter</b> - Entrar a la cueva<br>
+                <b style="color:#ff71ce">status</b> - Estado del SO<br>
+                <b style="color:#ff71ce">cls/clear</b> - Limpiar pantalla<br>
+                <b style="color:#ff71ce">ver</b> - Versión<br>
+                <b style="color:#ff71ce">sysinfo</b> - Diagnóstico<br>
+                <b style="color:#ff71ce">logo</b> - Logo ASCII<br>
+                <b style="color:#ff71ce">time</b> - Hora BIOS<br>
+                <b style="color:#ff71ce">yeyo</b> - Mensaje del hermano<br>
+                <b style="color:#ff71ce">yaoilover</b> - Protocolo secreto<br>
+                <b style="color:#ff71ce">whois_leo</b> - Ficha de Leo Kasper<br>
+                <b style="color:#ff71ce">note_final</b> - Carta interceptada<br>
+                <b style="color:#ff71ce">zork</b> - Aventura en texto<br>
+                <b style="color:#ff71ce">matrix</b> - Datos binarios<br>
+                <b style="color:#ff71ce">bsod</b> - Pantalla azul<br>
+                <b style="color:#ff71ce">shutdown</b> - Apagar`;
+            break;
+        case 'start': case 'enter':
+            responseDiv.style.color = "#05ffa1";
+            responseDiv.innerText = "Acceso concedido...";
+            setTimeout(() => terminalOverlay.style.display = 'none', 800);
+            break;
+        case 'status':
+            responseDiv.innerText = "SISTEMA: DOUZOZ 7 | MEMORIA: 99% Llena de Edits.";
+            break;
+        case 'cls': case 'clear':
+            commandHistory.innerHTML = '';
+            return;
+        case 'ver':
+            responseDiv.innerText = "DOUZOZ 7 OS [v3.01.7601 - SP2 Vaporwave]";
+            break;
+        case 'sysinfo':
+            responseDiv.innerHTML = `<span style="color:#05ffa1;">CPU:</span> PENTIUM IV 3.00GHz<br><span style="color:#05ffa1;">RAM:</span> 512MB DDR2<br><span style="color:#05ffa1;">GPU:</span> GeForce FX 5200<br><span style="color:#ff355e;">COPIA PIRATA NO ACTIVADA</span>`;
+            break;
+        case 'logo':
+            responseDiv.innerHTML = `<pre style="color: #ff71ce; font-weight: bold;">
+██████╗  ██████╗ ██╗   ██╗███████╗
+██╔══██╗██╔═══██╗██║   ██║╚══███╔╝
+██║  ██║██║   ██║██║   ██║  ███╔╝
+██║  ██║██║   ██║██║   ██║ ███╔╝
+██████╔╝╚██████╔╝╚██████╔╝███████╗
+╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝</pre>`;
+            break;
+        case 'time':
+            responseDiv.innerText = `Fecha BIOS: ${new Date().toLocaleString('es-ES')}`;
+            break;
+        case 'yeyo':
+            responseDiv.style.color = "#fff1be";
+            responseDiv.innerText = "⚡ YEYO CODE DETECTED: ¡Eso es rock, pibe!";
+            break;
+        case 'yaoilover':
+            executeYaoiloverProtocol();
+            return;
+        case 'whois_leo':
+            responseDiv.innerHTML = `<span style="color:#05ffa1;">FICHA: LEO KASPER</span><br>ID: LK-2007-X<br>Rol: Arquitecto Principal<br><span style="color:#ff355e;">Estado: DESCONECTADO</span>`;
+            break;
+        case 'note_final':
+            responseDiv.innerHTML = `<div style="border: 1px solid #ff71ce; padding: 10px; background: rgba(255, 113, 206, 0.05);">
+                <span style="color: #ff71ce; font-weight: bold;">[MEMORIA 0x08]</span><br>
+                De: Leo Kasper<br>Para: YaoiPornLover<br>Fecha: 14 Nov 2007<br><br>
+                Si estás leyendo esto, el script de apagado ya arrancó...<br>
+                Gracias por haberte quedado del otro lado de la pantalla.<br><br>
+                <i>- Leo Kasper.</i></div>`;
+            break;
+        case 'zork':
+            responseDiv.innerHTML = ZorkGame.start();
+            break;
+        case 'matrix':
+            responseDiv.innerHTML = `<div style="color: #05ffa1;">01001000 01100101 01101100 01101100 01110100<br>[RESTAURANDO MEMORIA...]</div>`;
+            break;
+        case 'bsod':
+            document.body.innerHTML = `<div style="background:#0000aa; color:#fff; font-family:monospace; padding:30px; height:100vh;">
+                <p>DRIVER_IRQL_NOT_LESS_OR_EQUAL</p>
+                <p>*** STOP: 0x0000000A</p>
+                <p>*** KASPER_SYS.SYS</p></div>`;
+            return;
+        case 'shutdown':
+            if (shutdownScreen) shutdownScreen.style.display = 'flex';
+            responseDiv.style.color = "#ff71ce";
+            responseDiv.innerText = "Apagando DOUZOZ 7...";
+            break;
+        default:
+            responseDiv.style.color = "#ff355e";
+            responseDiv.innerText = `'${cmd}' no reconocido. Escribe 'help'.`;
+    }
+    commandHistory.appendChild(responseDiv);
+}
 
-    <!-- CANVAS PARTÍCULAS -->
-    <canvas id="particle-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 998;"></canvas>
+terminalInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const cmd = terminalInput.value.trim().toLowerCase();
+        terminalInput.value = '';
+        if (cmd === '') return;
+        const historyLine = document.createElement('div');
+        const promptSymbol = ZorkGame.active ? 'ZORK>' : 'KASPER:\\DOUZOZ7>';
+        historyLine.innerHTML = `<span class="prompt-symbol">${promptSymbol}</span> ${cmd}`;
+        commandHistory.appendChild(historyLine);
+        processCommand(cmd);
+        terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+    }
+});
 
-    <!-- CAVE SHELL -->
-    <div id="cave-shell" style="display: none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; background: rgba(5, 10, 8, 0.95); border: 2px solid var(--neon-green); border-radius: 8px; padding: 15px; font-family: monospace; z-index: 25000; box-shadow: 0 0 30px rgba(57, 255, 20, 0.4);">
-        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--neon-green); padding-bottom: 5px; color: var(--neon-green); font-weight: bold;">
-            <span>CAVE_SHELL_v2.0.exe</span>
-            <span style="cursor: pointer;" onclick="document.getElementById('cave-shell').style.display='none'">[X]</span>
-        </div>
-        <div id="shell-output" style="height: 150px; overflow-y: auto; margin: 10px 0; color: #a3ffb0; font-size: 0.85rem;">
-            <div>> Sistema inicializado. Escribe 'help' para lista de comandos.</div>
-        </div>
-        <div style="display: flex; gap: 5px;">
-            <span style="color: var(--neon-green);">></span>
-            <input type="text" id="shell-input" style="flex-grow: 1; background: transparent; border: none; outline: none; color: #fff; font-family: monospace;" placeholder="Escribe un comando...">
-        </div>
-    </div>
+function executeYaoiloverProtocol() {
+    document.body.classList.add('yaoilover-mode');
+    let count = 0;
+    const interval = setInterval(() => {
+        if (count < 40) {
+            const spamLine = document.createElement('div');
+            spamLine.className = 'cloud-spam-line';
+            spamLine.innerText = `[${count + 1}/40] Cloud Strife mi viejo we 🫦`;
+            commandHistory.appendChild(spamLine);
+            terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+            count++;
+        } else {
+            clearInterval(interval);
+            setTimeout(() => {
+                terminalOverlay.style.display = 'none';
+                shutdownScreen.style.display = 'flex';
+                setTimeout(() => {
+                    document.body.innerHTML = '';
+                    document.body.style.backgroundColor = '#000000';
+                }, 3500);
+            }, 1200);
+        }
+    }, 40);
+}
 
-    <!-- SIDEBAR TERMINAL OS -->
-    <aside class="vm-aside-sidebar" id="vm-aside-root">
-        <button class="vm-aside-toggle" id="vm-aside-toggle-btn" title="Toggle Terminal OS [Alt+T]">
-            <span class="toggle-icon">⚡</span>
-            <span class="toggle-text">TERMINAL OS</span>
-        </button>
-        <div class="vm-aside-wrapper">
-            <header class="vm-aside-header">
-                <div class="vm-header-info">
-                    <span class="vm-aside-status"></span>
-                    <h3>YEYO-OS HYPERVISOR v4.0</h3>
-                </div>
-                <button class="vm-aside-close" id="vm-aside-close-btn">&times;</button>
-            </header>
-            <section class="vm-aside-os-selector">
-                <span class="selector-title">SELECCIONAR ARQUITECTURA:</span>
-                <div class="os-mini-list">
-                    <button class="os-mini-card active" data-os="douzoz98"><span class="os-num">01</span><span class="os-name">DOUZOZ 98'</span></button>
-                    <button class="os-mini-card" data-os="kasper64"><span class="os-num">02</span><span class="os-name">Kasper 64</span></button>
-                    <button class="os-mini-card" data-os="joylover10"><span class="os-num">03</span><span class="os-name">JoyLover 10</span></button>
-                    <button class="os-mini-card" data-os="yaoilover-mints"><span class="os-num">04</span><span class="os-name">YaoiLover Mints</span></button>
-                    <button class="os-mini-card os-locked" data-os="ultimate-44" disabled><span class="os-num">05</span><span class="os-name">YKL-DOUZOZ 44 [LOCK]</span></button>
-                </div>
-            </section>
-            <div class="vm-aside-viewport" id="vm-aside-viewport" data-theme="douzoz98">
-                <div class="crt-overlay"></div>
-                <div class="vm-aside-boot hidden" id="vm-aside-boot">
-                    <div class="boot-spinner"></div>
-                    <span id="vm-boot-label">CARGANDO SISTEMA...</span>
-                </div>
-                <div class="vm-aside-console">
-                    <div class="console-topbar" id="console-topbar">DOUZOZ_98_TTY1.SYS</div>
-                    <div class="console-output" id="aside-console-output"></div>
-                    <form class="console-form" id="aside-console-form">
-                        <span class="prompt-tag" id="aside-prompt-symbol">DOUZOZ:\></span>
-                        <input type="text" id="aside-console-input" autocomplete="off" spellcheck="false" placeholder="Escribe 'help' o 'zork'..." />
-                    </form>
-                </div>
-            </div>
-            <footer class="vm-aside-footer">
-                <span id="aside-clock">00:00:00</span>
-                <span class="aside-status-msg">PATREON: YEYO APPROVED</span>
-            </footer>
-        </div>
-    </aside>
+/* ================================================================
+   MÓDULO 12: FEEDBACK BOTONES BLOQUEADOS
+   ================================================================ */
+function triggerLockedSound(featureName) {
+    sfx.playTone(150, 'sawtooth', 0.25);
+    showAchievementToast({ icon: '🚧', title: 'ACCESO RESTRINGIDO', desc: `${featureName} está en construcción.` });
+}
 
-    <!-- ✅ JS: Al final del body, rutas relativas (sin la barra / al inicio) -->
-    <script src="js/main.js"></script>
-    
-    <!-- Si separaste más archivos JS, agrégalos aquí ANTES de main.js en orden de dependencia: -->
-    <!-- <script src="js/utils.js"></script> -->
-    <!-- <script src="js/audio-engine.js"></script> -->
-    <!-- <script src="js/achievements.js"></script> -->
-</body>
-</html>
+/* ================================================================
+   MÓDULO 13: PAGER MULTI-SKIN
+   ================================================================ */
+const pagerSkinData = {
+    gta3: {
+        brand: "LIBERTY CITY WIRELESS", title: "LC-PAGER", sticker: "🚕",
+        messages: [
+            "[8-BALL]: 'Tengo las bombas listas en Harwood.'",
+            "[EL BURRO]: 'Tengo un trabajo de carreras.'",
+            "[LCPD]: 'Unidad 12, sospechoso huyendo.'",
+            "[LUIGI]: 'Vení al Club Sex-Jadd.'",
+            "[PORTLAND]: 'El puente Callahan cerrado.'"
+        ]
+    },
+    argentina: {
+        brand: "LA SCALONETA 100% CRIOLLO", title: "MATE-PAGER", sticker: "🧉",
+        messages: [
+            "🇦🇷 [Yaoilover]: 'Prendé el fuego pibe.'",
+            "⚽ [Scaloni]: 'Muchachos, hoy se juega con el alma.'",
+            "🏆 [Dibu]: 'Mirá que te como, hermano.'",
+            "🎵 [Cumbia]: 'Sonando la cumbia.'",
+            "🥩 [La Vaga]: 'Saludos desde la pileta.'"
+        ]
+    },
+    matrix: {
+        brand: "NEBUCHADNEZZAR COMM", title: "MATRIX-NET", sticker: "🕶️",
+        messages: [
+            "[Morpheus]: 'Tomás la pastilla roja.'",
+            "[Trinity]: 'El agente Smith está rastreando.'",
+            "[Cypher]: 'La ignorancia es una bendición.'",
+            "[System]: 'Conexión cuántica establecida.'"
+        ]
+    },
+    classic: {
+        brand: "MOTOROLA BEEPER 90s", title: "BEEPER-90", sticker: "📟",
+        messages: [
+            "🚨 [Estado]: Disfrutando el Sol 🌴",
+            "📩 [YaoiLover]: 'Llamame al teléfono.'",
+            "⚠️ [Sistema]: Mensaje de prueba P2P."
+        ]
+    }
+};
+
+let currentSkin = 'gta3';
+let currentMsgIdx = 0;
+let isBacklightOn = true;
+let pagerBattery = 98;
+
+function setPagerSkin(skinName) {
+    currentSkin = skinName;
+    currentMsgIdx = 0;
+    document.querySelectorAll('.skin-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    const chassis = document.getElementById('pager-hardware');
+    chassis.className = `pager-chassis skin-${skinName}`;
+    const data = pagerSkinData[skinName];
+    document.getElementById('pager-brand-display').innerText = data.brand;
+    document.getElementById('pager-skin-title').innerText = data.title;
+    document.getElementById('pager-sticker-slot').innerText = data.sticker;
+    updatePagerLCD();
+    playPagerSFXForSkin(skinName);
+}
+
+function updatePagerLCD() {
+    const data = pagerSkinData[currentSkin];
+    document.getElementById('pager-display-text').innerText = data.messages[currentMsgIdx];
+    document.getElementById('pager-msg-counter').innerText = `MSG: ${currentMsgIdx + 1}/${data.messages.length}`;
+}
+
+function pagerNextMsg() {
+    const max = pagerSkinData[currentSkin].messages.length;
+    currentMsgIdx = (currentMsgIdx + 1) % max;
+    updatePagerLCD();
+    playTone(900, 0.04);
+}
+
+function pagerPrevMsg() {
+    const max = pagerSkinData[currentSkin].messages.length;
+    currentMsgIdx = (currentMsgIdx - 1 + max) % max;
+    updatePagerLCD();
+    playTone(700, 0.04);
+}
+
+function togglePagerLight() {
+    isBacklightOn = !isBacklightOn;
+    const box = document.getElementById('pager-lcd-box');
+    if (isBacklightOn) { box.classList.remove('backlight-off'); box.classList.add('backlight-on'); }
+    else { box.classList.remove('backlight-on'); box.classList.add('backlight-off'); }
+    playTone(1200, 0.03);
+}
+
+function chargePagerBattery() {
+    pagerBattery = 100;
+    document.getElementById('pager-battery-text').innerText = `🔋 100%`;
+    alert("⚡ ¡Batería cargada!");
+    playTone(1500, 0.1);
+}
+
+function playPagerAlert() {
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    if (currentSkin === 'gta3') {
+        playTone(1000, 0.1);
+        setTimeout(() => playTone(1400, 0.1), 120);
+        setTimeout(() => playTone(800, 0.2), 240);
+    } else if (currentSkin === 'argentina') {
+        playTone(523, 0.08);
+        setTimeout(() => playTone(659, 0.08), 90);
+        setTimeout(() => playTone(783, 0.15), 180);
+    } else {
+        playTone(1200, 0.15);
+    }
+}
+
+function pressPagerKey(n) {
+    const inp = document.getElementById('pager-code-input');
+    if (inp.value.length < 4) { inp.value += n; playTone(800, 0.03); }
+}
+
+function clearPagerKey() {
+    document.getElementById('pager-code-input').value = '';
+    playTone(400, 0.04);
+}
+
+function sendPagerCode() {
+    const code = document.getElementById('pager-code-input').value;
+    if (code === '1978' || code === '1986' || code === '2022') alert("🇦🇷 ¡MUCHACHOS! Modo Campeón.");
+    else if (code === '0351') alert("🚕 CÓDIGO GTA 3.");
+    else if (code.length > 0) alert(`📟 CÓDIGO [${code}] PROCESADO.`);
+    document.getElementById('pager-code-input').value = '';
+}
+
+function playTone(freq, duration) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.04, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + duration);
+    } catch(e) {}
+}
+
+function playPagerSFXForSkin(skin) {
+    if (skin === 'gta3') playTone(1100, 0.08);
+    else if (skin === 'argentina') playTone(880, 0.1);
+    else playTone(600, 0.05);
+}
+
+/* ================================================================
+   MÓDULO 14: TAPE DECK-9000
+   ================================================================ */
+const cuevaTapePlaylist = [
+    { id: 1, title: "01. CUEVA CYBERPUNK BEATS", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", skin: "skin-neon" },
+    { id: 2, title: "02. PORTLAND NIGHTS", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", skin: "skin-gold" },
+    { id: 3, title: "03. METAL SLUG MISSION", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", skin: "skin-red" }
+];
+let currentTapeIndex = 0;
+let isTapePlaying = false;
+let tapeAudio = new Audio();
+let tapeCounter = 0;
+let counterInterval = null;
+
+tapeAudio.addEventListener('timeupdate', () => {
+    if (!tapeAudio.duration) return;
+    const currSecs = tapeAudio.currentTime;
+    const totalSecs = tapeAudio.duration;
+    document.getElementById('current-time-text').innerText = formatTapeTime(currSecs);
+    document.getElementById('total-duration-text').innerText = formatTapeTime(totalSecs);
+    const pct = (currSecs / totalSecs) * 100;
+    document.getElementById('progress-fill').style.width = `${pct}%`;
+    updateSpoolSizes(pct / 100);
+});
+
+tapeAudio.addEventListener('ended', () => ejectCassette());
+
+function formatTapeTime(seconds) {
+    if (isNaN(seconds)) return "00:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function seekTapeProgress(event) {
+    if (!tapeAudio.duration) return;
+    const bar = event.currentTarget;
+    const rect = bar.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    tapeAudio.currentTime = (clickX / rect.width) * tapeAudio.duration;
+    playMechanicalSFX('click');
+}
+
+function jumpToTrackNumber(num) {
+    const idx = parseInt(num) - 1;
+    if (idx >= 0 && idx < cuevaTapePlaylist.length) {
+        loadTapeTrack(idx);
+        if (isTapePlaying) playTape();
+    }
+}
+
+function changeTapePitch(val) {
+    tapeAudio.playbackRate = parseFloat(val);
+    playMechanicalSFX('click');
+}
+
+function loadTapeTrack(index) {
+    currentTapeIndex = index;
+    const track = cuevaTapePlaylist[index];
+    tapeAudio.src = track.file;
+    tapeAudio.playbackRate = parseFloat(document.getElementById('tape-pitch-select').value);
+    document.getElementById('cassette-title-display').innerText = track.title;
+    document.getElementById('deck-song-name').innerText = track.title;
+    document.getElementById('direct-track-input').value = index + 1;
+    document.getElementById('active-cassette').className = `cassette-body ${track.skin}`;
+    resetTapeCounter();
+}
+
+function playTape() {
+    if (!tapeAudio.src) loadTapeTrack(0);
+    tapeAudio.play();
+    isTapePlaying = true;
+    document.getElementById('deck-door').className = 'deck-door-chamber playing';
+    document.querySelectorAll('.piano-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-tape-play').classList.add('active');
+    startCounter();
+    startVUMeters();
+    playMechanicalSFX('click');
+}
+
+function pauseTape() {
+    tapeAudio.pause();
+    isTapePlaying = false;
+    document.getElementById('deck-door').className = 'deck-door-chamber';
+    stopCounter();
+    playMechanicalSFX('click');
+}
+
+function stopTape() {
+    tapeAudio.pause();
+    tapeAudio.currentTime = 0;
+    isTapePlaying = false;
+    document.getElementById('deck-door').className = 'deck-door-chamber';
+    resetTapeCounter();
+    stopCounter();
+    playMechanicalSFX('clunk');
+}
+
+function ejectCassette() {
+    stopTape();
+    playMechanicalSFX('eject');
+    const chamber = document.getElementById('deck-door');
+    chamber.classList.add('ejecting');
+    setTimeout(() => {
+        currentTapeIndex = (currentTapeIndex + 1) % cuevaTapePlaylist.length;
+        loadTapeTrack(currentTapeIndex);
+        setTimeout(() => chamber.classList.remove('ejecting'), 300);
+    }, 500);
+}
+
+function fastForwardTape() { if (tapeAudio.src) { tapeAudio.currentTime += 10; playMechanicalSFX('whir'); } }
+function rewindTape() { if (tapeAudio.src) { tapeAudio.currentTime -= 10; playMechanicalSFX('whir'); } }
+
+function startCounter() {
+    stopCounter();
+    counterInterval = setInterval(() => {
+        if (isTapePlaying) {
+            tapeCounter++;
+            const str = String(tapeCounter % 1000).padStart(3, '0');
+            document.getElementById('counter-d1').innerText = str[0];
+            document.getElementById('counter-d2').innerText = str[1];
+            document.getElementById('counter-d3').innerText = str[2];
+        }
+    }, 1000);
+}
+
+function stopCounter() { if (counterInterval) clearInterval(counterInterval); }
+function resetTapeCounter() {
+    tapeCounter = 0;
+    document.getElementById('counter-d1').innerText = '0';
+    document.getElementById('counter-d2').innerText = '0';
+    document.getElementById('counter-d3').innerText = '0';
+}
+
+function updateSpoolSizes(pct) {
+    const leftSize = 38 - (pct * 20);
+    const rightSize = 18 + (pct * 20);
+    const sLeft = document.getElementById('spool-left');
+    const sRight = document.getElementById('spool-right');
+    if (sLeft) { sLeft.style.width = `${leftSize}px`; sLeft.style.height = `${leftSize}px`; }
+    if (sRight) { sRight.style.width = `${rightSize}px`; sRight.style.height = `${rightSize}px`; }
+}
+
+function startVUMeters() {
+    if (!isTapePlaying) return;
+    const leftNeedle = document.getElementById('vu-left');
+    const rightNeedle = document.getElementById('vu-right');
+    if (leftNeedle) leftNeedle.style.transform = `rotate(${Math.floor(Math.random() * 60) - 30}deg)`;
+    if (rightNeedle) rightNeedle.style.transform = `rotate(${Math.floor(Math.random() * 60) - 30}deg)`;
+    requestAnimationFrame(startVUMeters);
+}
+
+function playMechanicalSFX(type) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        if (type === 'click') { osc.frequency.value = 180; gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04); osc.start(); osc.stop(ctx.currentTime + 0.04); }
+        else if (type === 'eject') { osc.frequency.value = 320; gain.gain.setValueAtTime(0.12, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18); osc.start(); osc.stop(ctx.currentTime + 0.18); }
+    } catch(e) {}
+}
+
+/* ================================================================
+   MÓDULO 15: RELOJ SUPREMO + GEO IP + ANTI-ESTRÉS
+   ================================================================ */
+let clockTheme = 'vaporwave';
+
+function setClockTheme(theme) {
+    clockTheme = theme;
+    const box = document.getElementById('clock-display-box');
+    const digitalView = document.getElementById('digital-clock-view');
+    const analogView = document.getElementById('analog-clock-view');
+    document.querySelectorAll('.clk-mode-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    box.className = `clock-display-screen theme-${theme}`;
+    if (theme === 'analog') { digitalView.style.display = 'none'; analogView.style.display = 'block'; }
+    else { digitalView.style.display = 'block'; analogView.style.display = 'none'; }
+    sfx.playClick();
+}
+
+function updateClockLogic() {
+    const now = new Date();
+    const hrs = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    const secs = String(now.getSeconds()).padStart(2, '0');
+    document.getElementById('clock-time-text').innerText = `${hrs}:${mins}:${secs}`;
+    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    document.getElementById('clock-date-text').innerText = now.toLocaleDateString('es-ES', options).toUpperCase();
+    const secDeg = (now.getSeconds() / 60) * 360;
+    const minDeg = ((now.getMinutes() + now.getSeconds() / 60) / 60) * 360;
+    const hrDeg = ((now.getHours() % 12 + now.getMinutes() / 60) / 12) * 360;
+    const secHand = document.getElementById('second-hand');
+    const minHand = document.getElementById('minute-hand');
+    const hrHand = document.getElementById('hour-hand');
+    if (secHand) secHand.setAttribute('transform', `rotate(${secDeg} 50 50)`);
+    if (minHand) minHand.setAttribute('transform', `rotate(${minDeg} 50 50)`);
+    if (hrHand) hrHand.setAttribute('transform', `rotate(${hrDeg} 50 50)`);
+}
+setInterval(updateClockLogic, 1000);
+updateClockLogic();
+
+async function fetchUserGeoData() {
+    try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        if (data.ip) {
+            document.getElementById('user-ip-display').innerText = data.ip;
+            document.getElementById('user-location-display').innerText = `${data.city}, ${data.region}, ${data.country_name}`;
+            document.getElementById('user-isp-display').innerText = `ISP: ${data.org || 'Desconocido'}`;
+            document.getElementById('clock-ip-status').innerText = '🟢 IP RASTREADA';
+            if (data.country_code) {
+                document.getElementById('user-flag').innerHTML = `<img src="https://flagcdn.com/24x18/${data.country_code.toLowerCase()}.png" alt="flag" style="vertical-align:middle; border-radius:2px;">`;
+            }
+            if (data.latitude && data.longitude) fetchWeather(data.latitude, data.longitude);
+        }
+    } catch (err) {
+        document.getElementById('user-ip-display').innerText = '127.0.0.1';
+        document.getElementById('user-location-display').innerText = 'Cueva Secreta';
+        document.getElementById('clock-ip-status').innerText = '⚠️ MODEM BLINDADO';
+    }
+}
+
+async function fetchWeather(lat, lon) {
+    try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const wData = await res.json();
+        if (wData.current_weather) {
+            const temp = Math.round(wData.current_weather.temperature);
+            document.getElementById('user-weather-display').innerText = `${temp}°C 🌤️`;
+        }
+    } catch (e) {
+        document.getElementById('user-weather-display').innerText = '24°C ☀️';
+    }
+}
+fetchUserGeoData();
+
+let stressClicks = 0;
+const stressComments = [
+    "Eso pibe... dale con ganas.",
+    "El Yeyo aprueba tu spameo.",
+    "¿Ya te sentís más relajado?",
+    "¡Cuidado que vas a romper el botón!",
+    "Nivel de rabia bajando al 50%...",
+    "¡Eso es rock, pibe!",
+    "DESBLOQUEASTE EL MODO ZEN MÁXIMO."
+];
+
+document.getElementById('anti-stress-btn').addEventListener('click', () => {
+    stressClicks++;
+    document.getElementById('stress-counter-badge').innerText = `(${stressClicks} Clicks)`;
+    const commentIndex = Math.min(Math.floor(stressClicks / 5), stressComments.length - 1);
+    document.getElementById('stress-comment').innerText = `"${stressComments[commentIndex]}"`;
+    sfx.playClick();
+    if (stressClicks === 50) {
+        showAchievementToast({ icon: '🧘‍♂️', title: 'MAESTRO ZEN', desc: 'Presionaste 50 veces. Paz reina.' });
+    }
+});
+
+/* ================================================================
+   MÓDULO 16: SIDEBAR TERMINAL OS MULTI-ARQUITECTURA
+   ================================================================ */
+const ASIDE_OS_CONFIG = {
+    douzoz98: {
+        name: "DOUZOZ 98'", prompt: "DOUZOZ:\\>", theme: "douzoz98", topbar: "DOUZOZ_98_TTY1.SYS",
+        welcome: "DOUZOZ 98 [Version 4.10.1998]\nEscribe 'help' o 'zork'.",
+        commands: {
+            patreon: "🔗 Patreon: https://www.patreon.com/cw/YaoiPornLover",
+            yeyo: "👑 Yaoipornlover es el Arquitecto Supremo.",
+            arcade: "🕹️ Presiona F2 para la cueva completa.",
+            dir: "ARCHIVOS:\nAUTOEXEC.BAT\nYEYO_LORE.TXT\nZORK_DOUZOZ.EXE"
+        }
+    },
+    kasper64: {
+        name: "Kasper 64", prompt: "kasper64@root:~#", theme: "kasper64", topbar: "KASPER_64_WORKSTATION.SH",
+        welcome: "Kasper OS v6.4 Cyber-Workstation\nKernel 6.4-YEYO-SECURE.",
+        commands: {
+            patreon: "🔒 VIP: https://www.patreon.com/cw/YaoiPornLover",
+            scan: "🔍 Yeyo Vault: ENCRIPTADO [AES-256]",
+            firewall: "🛡️ CAVE_FIREWALL: 100% Operativo.",
+            ls: "kasper_vault.dat  yeyo_patreon_link.sh"
+        }
+    },
+    joylover10: {
+        name: "JoyLover 10", prompt: "JoyLover-OS>", theme: "joylover10", topbar: "JOYLOVER_10_NEON.EXE",
+        welcome: "JoyLover 10 Gamer Edition [Neon]",
+        commands: {
+            patreon: "💖 Patreon: https://www.patreon.com/cw/YaoiPornLover",
+            boost: "🚀 FPS Boost: 240 FPS",
+            rank: "🏆 Rango: Hermano de Hierro",
+            apps: "JoyLover_UI.exe, Yeyo_App.exe"
+        }
+    },
+    "yaoilover-mints": {
+        name: "YaoiLover Mints", prompt: "yaoi-mint@user:~$", theme: "yaoilover-mints", topbar: "MINT_UNIX_TERMINAL.BASH",
+        welcome: "YaoiLover Mints Linux 21.2 (Victoria)",
+        commands: {
+            patreon: "🌐 curl -s https://www.patreon.com/cw/YaoiPornLover",
+            whoami: "usuario_cueva (Staff del Yeyo)",
+            sudo: "🔐 Permiso concedido.",
+            neofetch: "OS: YaoiLover Mints 21.2\nHOST: Yeyo Cave Server"
+        }
+    }
+};
+
+const ZORK_STORIES = {
+    douzoz98: {
+        title: "=== ZORK 1998: EL MITO DEL YEYO ===",
+        stages: {
+            0: "Frente a una CRT gigante. Hay un disquete dorado 'Yaoipornlover'.\n(1: Insertar / 2: Ver Patreon / 3: Salir)",
+            1: { 1: "¡El disquete arranca! El Yeyo te ofrece una cerveza.\n(1: Brindar / 2: Preguntar por la cueva)", 2: "Abres Netscape: Patreon del Yeyo.", 3: "Saliendo..." },
+            2: { 1: "¡Salud! Ganaste la Llave Maestra.", 2: "Yeyo: 'Apoyanos en Patreon'." }
+        }
+    },
+    kasper64: {
+        title: "=== ZORK CYBER: INFILTRACIÓN ===",
+        stages: {
+            0: "Servidor oscuro. Archivo 'yeyo_patreon_secret.key'.\n(1: Hackear / 2: Patreon / 3: Salir)",
+            1: { 1: "ACCESO PERMITIDO. Blueprint 3D.\n(1: Cargar / 2: Mensaje)", 2: "Pase VIP 64-bit.", 3: "Saliendo..." },
+            2: { 1: "Misión Cumplida.", 2: "Mensaje enviado: 'Yeyo, sos el uno'." }
+        }
+    },
+    joylover10: {
+        title: "=== ZORK NEON: BÚSQUEDA DEL PATREON ===",
+        stages: {
+            0: "Letrero de neón rosa: 'CUEVA DEL YEYO'.\n(1: Joystick / 2: Patreon / 3: Salir)",
+            1: { 1: "¡COMBO! 1000 Puntos.\n(1: P1 Yeyo / 2: Trofeos)", 2: "¡Nivel VIP!", 3: "Saliendo..." },
+            2: { 1: "¡VICTORIA NEON!", 2: "Trofeo: 'Hermano del Yeyo [Legendario]'." }
+        }
+    },
+    "yaoilover-mints": {
+        title: "=== ZORK UNIX: LABERINTO YAOI ===",
+        stages: {
+            0: "Terminal Bash. Script 'yeyo_script.sh'.\n(1: ./yeyo_script.sh / 2: cat patreon.txt / 3: Salir)",
+            1: { 1: "Banner ASCII del Yeyo. Puerta secreta.\n(1: Entrar / 2: Donar)", 2: "patreon.txt: Apoya al Yeyo.", 3: "Saliendo..." },
+            2: { 1: "¡Juego completado!", 2: "¡Patrón legendario!" }
+        }
+    }
+};
+
+let activeZork = null;
+let zorkStage = 0;
+let currentAsideOS = 'douzoz98';
+
+document.addEventListener('DOMContentLoaded', () => {
+    initAsideDrawer();
+    initAsideOSSelector();
+    initAsideConsole();
+    loadAsideOS('douzoz98');
+    setInterval(() => {
+        document.getElementById('aside-clock').textContent = new Date().toLocaleTimeString();
+    }, 1000);
+    window.addEventListener('keydown', (e) => {
+        if (e.altKey && (e.key === 't' || e.key === 'T')) {
+            document.getElementById('vm-aside-root').classList.toggle('open');
+        }
+    });
+    build3DTitle();
+    updateAchievementsUI();
+    setTimeout(() => checkAchievement('welcome'), 1000);
+    loadTapeTrack(0);
+});
+
+function initAsideDrawer() {
+    const sidebar = document.getElementById('vm-aside-root');
+    document.getElementById('vm-aside-toggle-btn').addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.getElementById('vm-aside-close-btn').addEventListener('click', () => sidebar.classList.remove('open'));
+}
+
+function initAsideOSSelector() {
+    document.querySelectorAll('.os-mini-card:not(.os-locked)').forEach(card => {
+        card.addEventListener('click', () => {
+            const selected = card.getAttribute('data-os');
+            if (selected && selected !== currentAsideOS) {
+                document.querySelectorAll('.os-mini-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                loadAsideOS(selected);
+            }
+        });
+    });
+}
+
+function loadAsideOS(osKey) {
+    currentAsideOS = osKey;
+    activeZork = null;
+    zorkStage = 0;
+    const config = ASIDE_OS_CONFIG[osKey];
+    const bootScreen = document.getElementById('vm-aside-boot');
+    const bootLabel = document.getElementById('vm-boot-label');
+    const viewport = document.getElementById('vm-aside-viewport');
+    const topbar = document.getElementById('console-topbar');
+    const promptSymbol = document.getElementById('aside-prompt-symbol');
+    const output = document.getElementById('aside-console-output');
+    bootScreen.classList.remove('hidden');
+    bootLabel.textContent = `CARGANDO ${config.name}...`;
+    setTimeout(() => {
+        viewport.setAttribute('data-theme', config.theme);
+        topbar.textContent = config.topbar;
+        promptSymbol.textContent = config.prompt;
+        output.innerHTML = '';
+        printAsideLine(config.welcome, 'system');
+        bootScreen.classList.add('hidden');
+    }, 500);
+}
+
+function initAsideConsole() {
+    const form = document.getElementById('aside-console-form');
+    const input = document.getElementById('aside-console-input');
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const cmd = input.value.trim();
+        if (cmd) { processAsideCommand(cmd); input.value = ''; }
+    });
+}
+
+function processAsideCommand(cmd) {
+    const prompt = ASIDE_OS_CONFIG[currentAsideOS].prompt;
+    printAsideLine(`${prompt} ${cmd}`, 'user');
+    const cleanCmd = cmd.toLowerCase();
+    if (activeZork) { handleZorkInput(cleanCmd); return; }
+    const currentOSCmds = ASIDE_OS_CONFIG[currentAsideOS].commands;
+    if (cleanCmd === 'help') {
+        printAsideLine('--- COMANDOS ---', 'info');
+        printAsideLine('  help, clear, zork, patreon');
+        for (let c in currentOSCmds) printAsideLine(`  ${c} - Específico de ${ASIDE_OS_CONFIG[currentAsideOS].name}`);
+    } else if (cleanCmd === 'clear') {
+        document.getElementById('aside-console-output').innerHTML = '';
+    } else if (cleanCmd === 'zork') {
+        activeZork = currentAsideOS;
+        zorkStage = 0;
+        const story = ZORK_STORIES[activeZork];
+        printAsideLine(story.title, 'warning');
+        printAsideLine(story.stages[0], 'info');
+    } else if (currentOSCmds[cleanCmd]) {
+        printAsideLine(currentOSCmds[cleanCmd], 'info');
+    } else {
+        printAsideLine(`Comando no reconocido: '${cmd}'.`, 'error');
+    }
+}
+
+function handleZorkInput(input) {
+    const story = ZORK_STORIES[activeZork];
+    if (zorkStage === 0) {
+        if (input === '1') { zorkStage = 1; printAsideLine(story.stages[1][1], 'info'); }
+        else if (input === '2') {
+            printAsideLine("Abriendo Patreon...", 'warning');
+            window.open('https://www.patreon.com/cw/YaoiPornLover', '_blank');
+            activeZork = null;
+        } else if (input === '3') { printAsideLine("Saliste del Zork.", 'system'); activeZork = null; }
+        else printAsideLine("Opción inválida.", 'error');
+    } else if (zorkStage === 1) {
+        if (input === '1') { zorkStage = 2; printAsideLine(story.stages[2][1], 'warning'); printAsideLine("--- VICTORIA ---", 'system'); activeZork = null; }
+        else if (input === '2') { zorkStage = 2; printAsideLine(story.stages[2][2], 'warning'); printAsideLine("--- FIN ---", 'system'); activeZork = null; }
+        else printAsideLine("Opción inválida.", 'error');
+    }
+}
+
+function printAsideLine(text, type = '') {
+    const output = document.getElementById('aside-console-output');
+    const el = document.createElement('div');
+    el.style.color = type === 'error' ? '#ff3366' : type === 'info' ? '#00f3ff' : type === 'warning' ? '#d4af37' : type === 'system' ? '#888' : '#fff';
+    el.textContent = text;
+    output.appendChild(el);
+    output.scrollTop = output.scrollHeight;
+}
