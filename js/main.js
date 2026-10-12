@@ -416,44 +416,394 @@ if (vhsBtn) {
 }
 
 /* ================================================================
-   MÓDULO 9: SECUENCIA DE ARRANQUE + TERMINAL KASPER
+   MÓDULO 9: SECUENCIA DE ARRANQUE SUPREMA - "YEYO BIOS v9.0 ULTRA"
    ================================================================ */
-const bootLogs = [
-    "KASPER BIOS v3.01 (C) 2007 KASPER CORP.",
-    "Checking System Hardware...",
-    "RAM: 640KB OK (Ext: 16384KB OK)",
-    "Video Adapter: VAPORWAVE 3D FX VELOCITY - OK",
-    "Audio: SOUND BLASTER 16 [DMA 1, IRQ 5] - OK",
-    "GTA3_ENGINE: Checking Cd-Rom... OK",
-    "VICE_CITY_SHELL: Loading ViceCity_Vapor.sys...",
-    "CAVE_CORE: Initializing Pleasure Protocol...",
-    "Mounting OS Partition [DOUZOZ 7]...",
-    "--------------------------------------------------"
-];
+
+// ==========================================
+// 1. INYECCIÓN DE CSS ÉPICO (No toques tu CSS)
+// ==========================================
+const epicBootCSS = `
+    @keyframes crtTurnOn {
+        0% { transform: scale(1, 0.002); opacity: 0; filter: brightness(30) blur(10px); }
+        30% { transform: scale(1, 0.002); opacity: 1; filter: brightness(20) blur(5px); }
+        60% { transform: scale(1, 1); filter: brightness(10) blur(2px); }
+        100% { transform: scale(1, 1); filter: brightness(1) blur(0px); }
+    }
+    @keyframes crtFlicker {
+        0% { opacity: 0.97; } 5% { opacity: 0.95; } 10% { opacity: 0.98; } 
+        15% { opacity: 0.94; } 50% { opacity: 0.96; } 100% { opacity: 0.97; }
+    }
+    @keyframes logoPulse {
+        0%, 100% { filter: drop-shadow(0 0 10px #ff71ce) drop-shadow(0 0 20px #01cdfe); transform: scale(1); }
+        50% { filter: drop-shadow(0 0 25px #ff71ce) drop-shadow(0 0 40px #01cdfe); transform: scale(1.02); }
+    }
+    @keyframes scanline {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+    }
+    @keyframes hexRain {
+        0% { background-position: 0% 0%; }
+        100% { background-position: 0% 100%; }
+    }
+    .crt-overlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 4px, 6px 100%;
+        pointer-events: none; z-index: 99999;
+        animation: crtFlicker 0.15s infinite;
+    }
+    .scanline-beam {
+        position: fixed; top: 0; left: 0; width: 100%; height: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        animation: scanline 6s linear infinite;
+        pointer-events: none; z-index: 99998;
+    }
+    .boot-container-epic {
+        background: #050505; color: #00ff41; font-family: 'Courier New', monospace;
+        font-size: 14px; padding: 20px; height: 100vh; overflow: hidden;
+        text-shadow: 0 0 5px #00ff41; position: relative;
+    }
+    .logo-loading-screen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; z-index: 99990;
+        opacity: 0; transition: opacity 1s ease-in-out;
+    }
+    .logo-loading-screen.active { opacity: 1; }
+    .yeyo-logo-img {
+        max-width: 300px; border: 2px solid #ff71ce; border-radius: 10px;
+        animation: logoPulse 3s infinite ease-in-out; margin-bottom: 30px;
+        background: #111; /* Fondo por si la imagen es transparente */
+    }
+    .epic-progress-bar {
+        width: 400px; height: 20px; border: 2px solid #01cdfe;
+        background: #001100; position: relative; overflow: hidden;
+    }
+    .epic-progress-fill {
+        height: 100%; background: linear-gradient(90deg, #ff71ce, #01cdfe, #05ffa1);
+        width: 0%; transition: width 0.2s ease-out;
+        box-shadow: 0 0 15px #01cdfe;
+    }
+    .loading-lore {
+        color: #888; font-size: 12px; margin-top: 15px; font-style: italic;
+        min-height: 20px; text-align: center;
+    }
+    .hex-bg {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        opacity: 0.05; font-size: 10px; line-height: 10px; color: #00ff41;
+        overflow: hidden; pointer-events: none; z-index: -1;
+        animation: hexRain 20s linear infinite;
+    }
+`;
+const styleSheet = document.createElement("style");
+styleSheet.innerText = epicBootCSS;
+document.head.appendChild(styleSheet);
+
+// ==========================================
+// 2. CONFIGURACIÓN Y DATOS
+// ==========================================
 const bootContainer = document.getElementById('boot-sequence');
 const interactivePrompt = document.getElementById('interactive-prompt');
 const terminalInput = document.getElementById('terminal-input');
 const commandHistory = document.getElementById('command-history');
 const terminalOverlay = document.getElementById('kasper-terminal-overlay');
-const shutdownScreen = document.getElementById('douzoz-shutdown-screen');
-let lineIndex = 0;
 
-function runBootSequence() {
-    if (lineIndex < bootLogs.length) {
-        const div = document.createElement('div');
-        div.innerText = bootLogs[lineIndex];
-        div.style.color = "#01cdfe";
-        bootContainer.appendChild(div);
-        lineIndex++;
-        setTimeout(runBootSequence, 120);
-    } else {
-        setTimeout(() => {
-            interactivePrompt.style.display = 'block';
-            terminalInput.focus();
-        }, 300);
+// ⚠️ ¡CAMBIA ESTA URL POR LA DE TU LOGO REAL! ⚠️
+const LOGO_IMAGE_URL = "https://media.tenor.com/On7kvXhzml4AAAAj/loading-gif.gif"; // Placeholder retro, cámbialo por tu logo.png
+
+const loadingLore = [
+    "Calibrando generadores de placer...",
+    "Desencriptando archivos de Leo Kasper...",
+    "Cargando texturas de pelaje furry en 4K...",
+    "Conectando al servidor secreto de la Scaloneta...",
+    "Inyectando código YAOILOVER en el kernel...",
+    "Verificando existencia del Hermano Yeyo... [CONFIRMADO]",
+    "Pulverizando bugs con martillo neumático...",
+    "Sincronizando ritmo cardíaco con el beat de la cueva..."
+];
+
+const bootLogs = [
+    { text: "YEYO BIOS v9.01 ULTRA (C) 2007-2026 KASPER CORP.", type: "header", delay: 100 },
+    { text: "CPU: PENTIUM IV YEYO EDITION 3.8GHz [OK]", type: "success", delay: 150 },
+    { text: "Memory Test: ", type: "memory", delay: 800 }, // Especial
+    { text: "Detecting Primary Master ... YEYO_NVME_2TB [OK]", type: "drive", delay: 200 },
+    { text: "Detecting Primary Slave  ... CAVE_HDD_500GB [OK]", type: "drive", delay: 150 },
+    { text: "Detecting Secondary Master ... DVD_ROM_YEYO [OK]", type: "drive", delay: 150 },
+    { text: "USB Device Found: YEYO_KEYBOARD_RGB_MECHANICAL", type: "info", delay: 100 },
+    { text: "USB Device Found: CAVE_MOUSE_HOVER_PRECISION", type: "info", delay: 100 },
+    { text: "Video Adapter: VAPORWAVE GeForce RTX 4090 [24GB VRAM] [OK]", type: "success", delay: 200 },
+    { text: "Audio: SOUND BLASTER AE-9 [DMA 1, IRQ 5, IO 220] [OK]", type: "success", delay: 150 },
+    { text: "Network: REALTEK YEYO GIGABIT [MAC: 00:YE:YO:CA:VE:01] [OK]", type: "success", delay: 150 },
+    { text: "DHCP ... [ACQUIRED IP: 192.168.YE.YO]", type: "info", delay: 200 },
+    { text: "--------------------------------------------------", type: "blank", delay: 50 },
+    { text: "Loading CAVE_CORE drivers...", type: "loading", delay: 300 },
+    { text: "  [████████████████████] 100%", type: "progress", delay: 400 },
+    { text: "Mounting file systems: C: [NTFS] D: [FAT32] Z: [YEYO_FS] [OK]", type: "success", delay: 200 },
+    { text: "Starting DOUZOZ 7 Operating System...", type: "header", delay: 300 },
+    { text: "Kernel: 7.0.1-YEYO-CAVE-EDITION [BUILD 2026.10.13]", type: "info", delay: 150 },
+    { text: "Initializing Pleasure Protocol v3.0...", type: "loading", delay: 500 }
+];
+
+// ==========================================
+// 3. MOTOR DE AUDIO AVANZADO
+// ==========================================
+const bootAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playEpicSound(type) {
+    if (bootAudioCtx.state === 'suspended') bootAudioCtx.resume();
+    const osc = bootAudioCtx.createOscillator();
+    const gain = bootAudioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(bootAudioCtx.destination);
+    
+    const now = bootAudioCtx.currentTime;
+    switch(type) {
+        case 'poweron':
+            osc.type = 'sine'; osc.frequency.setValueAtTime(50, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.5);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+            osc.start(now); osc.stop(now + 0.8);
+            break;
+        case 'beep':
+            osc.type = 'square'; osc.frequency.value = 1000;
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+            break;
+        case 'hdd':
+            osc.type = 'sawtooth'; osc.frequency.value = 120;
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.linearRampToValueAtTime(0, now + 0.15);
+            osc.start(now); osc.stop(now + 0.15);
+            break;
+        case 'success':
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now);
+            osc.frequency.setValueAtTime(554, now + 0.1); // C#
+            osc.frequency.setValueAtTime(659, now + 0.2); // E
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+            osc.start(now); osc.stop(now + 0.6);
+            break;
     }
 }
-window.addEventListener('load', runBootSequence);
+
+// ==========================================
+// 4. FUNCIONES VISUALES ÉPICAS
+// ==========================================
+function createCRTOverlays() {
+    const overlay = document.createElement('div');
+    overlay.className = 'crt-overlay';
+    document.body.appendChild(overlay);
+    
+    const beam = document.createElement('div');
+    beam.className = 'scanline-beam';
+    document.body.appendChild(beam);
+}
+
+function generateHexBackground() {
+    const hexDiv = document.createElement('div');
+    hexDiv.className = 'hex-bg';
+    let hexText = "";
+    for(let i=0; i<3000; i++) {
+        hexText += Math.random() > 0.5 ? "1" : "0";
+        if(i % 80 === 0) hexText += "<br>";
+    }
+    hexDiv.innerHTML = hexText;
+    return hexDiv;
+}
+
+function typeWriter(element, text, speed = 20) {
+    return new Promise(resolve => {
+        let i = 0;
+        function type() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            } else {
+                resolve();
+            }
+        }
+        type();
+    });
+}
+
+// ==========================================
+// 5. PANTALLA DE CARGA CON LOGO (LA JOYA DE LA CORONA)
+// ==========================================
+async function showLogoLoadingScreen() {
+    // 1. Crear la pantalla
+    const loadingScreen = document.createElement('div');
+    loadingScreen.className = 'logo-loading-screen';
+    loadingScreen.innerHTML = `
+        <img src="${LOGO_IMAGE_URL}" class="yeyo-logo-img" alt="YEYO LOGO">
+        <div style="color: #01cdfe; font-family: 'Courier New'; font-size: 18px; font-weight: bold; letter-spacing: 2px;">
+            INICIANDO DOUZOZ 7...
+        </div>
+        <div class="epic-progress-bar">
+            <div class="epic-progress-fill" id="epic-fill"></div>
+        </div>
+        <div class="loading-lore" id="loading-lore-text">Preparando la Cueva...</div>
+    `;
+    document.body.appendChild(loadingScreen);
+    
+    // 2. Activar con fade-in
+    await new Promise(r => setTimeout(r, 500));
+    loadingScreen.classList.add('active');
+    playEpicSound('success');
+    
+    // 3. Simular carga progresiva
+    const fill = document.getElementById('epic-fill');
+    const loreText = document.getElementById('loading-lore-text');
+    let progress = 0;
+    
+    while (progress < 100) {
+        await new Promise(r => setTimeout(r, Math.random() * 150 + 50));
+        const increment = Math.random() * 5 + 1;
+        progress = Math.min(progress + increment, 100);
+        fill.style.width = `${progress}%`;
+        
+        // Cambiar texto de lore cada ~20%
+        if (Math.random() > 0.85) {
+            loreText.style.opacity = 0;
+            await new Promise(r => setTimeout(r, 200));
+            loreText.innerText = loadingLore[Math.floor(Math.random() * loadingLore.length)];
+            loreText.style.opacity = 1;
+        }
+        
+        if (progress > 30 && progress < 35) playEpicSound('hdd');
+        if (progress > 70 && progress < 75) playEpicSound('hdd');
+    }
+    
+    // 4. Finalizar carga
+    loreText.innerText = "¡SISTEMA LISTO! BIENVENIDO, HERMANO.";
+    loreText.style.color = "#05ffa1";
+    playEpicSound('success');
+    
+    await new Promise(r => setTimeout(r, 1500));
+    
+    // 5. Desvanecer pantalla de carga y revelar terminal
+    loadingScreen.style.opacity = 0;
+    await new Promise(r => setTimeout(r, 1000));
+    loadingScreen.remove();
+    
+    // Revelar terminal interactivo
+    terminalOverlay.style.display = 'block';
+    interactivePrompt.style.display = 'block';
+    terminalInput.focus();
+    
+    // Mensaje final en la terminal
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.style.cssText = "color: #05ffa1; font-size: 16px; margin: 10px 0; border: 1px solid #05ffa1; padding: 10px;";
+    welcomeDiv.innerHTML = `
+        ╔═══════════════════════════════════════════════╗<br>
+        ║   🌟 BIENVENIDO A LA CUEVA DEL YEYO 🌟       ║<br>
+        ║   Escribe 'help' para ver los comandos.      ║<br>
+        ╚═══════════════════════════════════════════════╝
+    `;
+    commandHistory.appendChild(welcomeDiv);
+    terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+}
+
+// ==========================================
+// 6. SECUENCIA DE ARRANQUE PRINCIPAL
+// ==========================================
+async function runEpicBoot() {
+    createCRTOverlays();
+    bootContainer.className = 'boot-container-epic';
+    bootContainer.appendChild(generateHexBackground());
+    
+    // Efecto de encendido
+    playEpicSound('poweron');
+    bootContainer.style.animation = 'crtTurnOn 1.5s ease-out forwards';
+    
+    await new Promise(r => setTimeout(r, 1500));
+    
+    // Procesar logs
+    for (let i = 0; i < bootLogs.length; i++) {
+        const log = bootLogs[i];
+        const div = document.createElement('div');
+        div.style.marginBottom = "4px";
+        
+        if (log.type === 'header') {
+            div.style.color = "#ff71ce";
+            div.style.fontWeight = "bold";
+            div.style.fontSize = "16px";
+        } else if (log.type === 'success') {
+            div.style.color = "#05ffa1";
+        } else if (log.type === 'drive' || log.type === 'info') {
+            div.style.color = "#01cdfe";
+            div.style.paddingLeft = "15px";
+        } else if (log.type === 'progress') {
+            div.style.color = "#ffd700";
+        }
+        
+        bootContainer.appendChild(div);
+        
+        if (log.type === 'memory') {
+            // Animación especial de conteo de RAM
+            let ram = 0;
+            const target = 65536;
+            const ramInterval = setInterval(() => {
+                ram += 1024;
+                div.innerText = `Memory Test: ${ram}K OK`;
+                if (ram >= target) {
+                    clearInterval(ramInterval);
+                    div.innerText = `Memory Test: ${target}K RAM System OK`;
+                    playEpicSound('success');
+                }
+            }, 20);
+            await new Promise(r => setTimeout(r, log.delay));
+        } else {
+            await typeWriter(div, log.text, 10);
+            if (log.type === 'drive' || log.type === 'success') playEpicSound('hdd');
+            await new Promise(r => setTimeout(r, log.delay));
+        }
+        
+        bootContainer.scrollTop = bootContainer.scrollHeight;
+    }
+    
+    // Transición a la pantalla de logo
+    await new Promise(r => setTimeout(r, 500));
+    bootContainer.style.display = 'none'; // Ocultar texto de boot
+    showLogoLoadingScreen();
+}
+
+// ==========================================
+// 7. EASTER EGGS Y CONTROLES
+// ==========================================
+window.addEventListener('load', runEpicBoot);
+
+// Espacio para saltar la animación (por si el usuario tiene prisa)
+let skipBoot = false;
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !skipBoot) {
+        skipBoot = true;
+        // Forzar fin del boot y mostrar logo directamente
+        document.querySelectorAll('.boot-container-epic *').forEach(el => el.remove());
+        showLogoLoadingScreen();
+    }
+});
+
+// Código Konami para modo arcoíris extremo
+const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+let konamiIndex = 0;
+window.addEventListener('keydown', (e) => {
+    if (e.key === konamiCode[konamiIndex]) {
+        konamiIndex++;
+        if (konamiIndex === konamiCode.length) {
+            document.body.style.filter = "hue-rotate(0deg)";
+            document.body.style.animation = "hueRotate 5s linear infinite";
+            const style = document.createElement('style');
+            style.innerText = "@keyframes hueRotate { 100% { filter: hue-rotate(360deg); } }";
+            document.head.appendChild(style);
+            alert("🌈 ¡MODO ARCOÍRIS YEYO ACTIVADO! 🌈");
+            konamiIndex = 0;
+        }
+    } else {
+        konamiIndex = 0;
+    }
+});
 
 /* ================================================================
    MÓDULO 10: MOTOR ZORK
