@@ -862,141 +862,526 @@ const ZorkGame = {
 };
 
 /* ================================================================
-   MÓDULO 11: PROCESADOR CENTRAL DE COMANDOS
+   MÓDULO 11: PROCESADOR CENTRAL DE COMANDOS - "YEYO AI CORE v9.0"
    ================================================================ */
+
+// ==========================================
+// 1. CONFIGURACIÓN Y ESTADO GLOBAL
+// ==========================================
+let commandHistoryStack = []; // Para las flechas arriba/abajo
+let historyIndex = -1;
+let isTypingEffectActive = false;
+
+// Lista de comandos para autocompletar
+const availableCommands = [
+    'help', 'start', 'enter', 'status', 'cls', 'clear', 'ver', 'sysinfo', 
+    'logo', 'time', 'yeyo', 'yaoilover', 'whois_leo', 'note_final', 
+    'zork', 'matrix', 'bsod', 'shutdown', 'sudo', 'hack', 'music', 
+    'avatar', 'lore', 'credits', 'reboot'
+];
+
+// Frases aleatorias del sistema para dar vida
+const systemResponses = {
+    error: ["Error crítico: Comando inválido.", "¿Qué intentás hacer, pibe?", "El Yeyo no aprueba eso.", "Syntax Error: Revisa tus cables."],
+    success: ["Acceso concedido.", "Procesando solicitud...", "Orden ejecutada con éxito.", "La Cueva obedece."],
+    idle: ["Esperando input...", "Sistema estable.", "Modo reposo activado."]
+};
+
+function getRandomResponse(type) {
+    const arr = systemResponses[type] || systemResponses.idle;
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// ==========================================
+// 2. MOTOR DE ESCRITURA Y GLITCHES
+// ==========================================
+function typeWriterEffect(element, text, speed = 10, callback) {
+    isTypingEffectActive = true;
+    element.innerHTML = '';
+    let i = 0;
+    
+    function type() {
+        if (i < text.length) {
+            // Efecto glitch aleatorio mientras escribe
+            if (Math.random() > 0.9 && text[i] !== '<') {
+                element.innerHTML += `<span style="color:#ff355e">${text[i]}</span>`;
+            } else {
+                element.innerHTML += text.charAt(i);
+            }
+            i++;
+            setTimeout(type, speed);
+        } else {
+            isTypingEffectActive = false;
+            if (callback) callback();
+        }
+    }
+    type();
+}
+
+function triggerTerminalGlitch() {
+    const overlay = document.getElementById('kasper-terminal-overlay');
+    if (!overlay) return;
+    
+    overlay.style.filter = "hue-rotate(90deg) invert(1)";
+    overlay.style.transform = "translate(5px, -5px) skewX(5deg)";
+    
+    setTimeout(() => {
+        overlay.style.filter = "none";
+        overlay.style.transform = "none";
+    }, 150);
+}
+
+// ==========================================
+// 3. PROCESADOR PRINCIPAL MEJORADO
+// ==========================================
 function processCommand(cmd) {
     const responseDiv = document.createElement('div');
-    responseDiv.style.marginBottom = "10px";
+    responseDiv.style.marginBottom = "15px";
+    responseDiv.className = 'command-response';
+    
+    // Guardar en historial
+    if (cmd.trim() !== '') {
+        commandHistoryStack.push(cmd);
+        historyIndex = commandHistoryStack.length;
+    }
+
+    // Si estamos jugando ZORK, delegar al motor Zork
     if (ZorkGame.active) {
         responseDiv.innerHTML = ZorkGame.parseCommand(cmd);
         commandHistory.appendChild(responseDiv);
+        terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
         return;
     }
-    switch (cmd) {
+
+    const cleanCmd = cmd.toLowerCase().trim();
+
+    // ==========================================
+    // SWITCH DE COMANDOS ÉPICOS
+    // ==========================================
+    switch (cleanCmd) {
+        
         case 'help':
-            responseDiv.innerHTML = `<span style="color:#05ffa1;">COMANDOS:</span><br>
-                <b style="color:#ff71ce">start/enter</b> - Entrar a la cueva<br>
-                <b style="color:#ff71ce">status</b> - Estado del SO<br>
-                <b style="color:#ff71ce">cls/clear</b> - Limpiar pantalla<br>
-                <b style="color:#ff71ce">ver</b> - Versión<br>
-                <b style="color:#ff71ce">sysinfo</b> - Diagnóstico<br>
-                <b style="color:#ff71ce">logo</b> - Logo ASCII<br>
-                <b style="color:#ff71ce">time</b> - Hora BIOS<br>
-                <b style="color:#ff71ce">yeyo</b> - Mensaje del hermano<br>
-                <b style="color:#ff71ce">yaoilover</b> - Protocolo secreto<br>
-                <b style="color:#ff71ce">whois_leo</b> - Ficha de Leo Kasper<br>
-                <b style="color:#ff71ce">note_final</b> - Carta interceptada<br>
-                <b style="color:#ff71ce">zork</b> - Aventura en texto<br>
-                <b style="color:#ff71ce">matrix</b> - Datos binarios<br>
-                <b style="color:#ff71ce">bsod</b> - Pantalla azul<br>
-                <b style="color:#ff71ce">shutdown</b> - Apagar`;
+            responseDiv.innerHTML = `
+                <pre style="color: #01cdfe; font-family: monospace;">
+╔══════════════════════════════════════════════════╗
+║           📟 GUÍA DE COMANDOS DOUZOZ 7          ║
+╠══════════════════════════════════════════════════╣
+║  <b>SYSTEM</b>                                      ║
+║   • start/enter  -> Entrar a la interfaz gráfica║
+║   • status       -> Estado del SO               ║
+║   • sysinfo      -> Hardware detallado          ║
+║   • ver          -> Versión del Kernel          ║
+║   • reboot       -> Reiniciar Sistema           ║
+║                                                 ║
+║  <b>YEYO & LORE</b>                                 ║
+║   • yeyo         -> Mensaje del hermano         ║
+║   • whois_leo    -> Ficha de Leo Kasper         ║
+║   • note_final   -> Carta interceptada          ║
+║   • lore         -> Historia completa           ║
+║   • credits      -> Equipo de desarrollo        ║
+║                                                 ║
+║  <b>GAMING & FUN</b>                                ║
+║   • zork         -> Iniciar Aventura RPG        ║
+║   • matrix       -> Lluvia de código binario    ║
+║   • music        -> Reproducir track YeYo_Theme ║
+║   • avatar       -> Cambiar skin de usuario     ║
+║                                                 ║
+║  <b>HACKER / SECRETOS</b>                           ║
+║   • sudo rm -rf  -> Intentar borrar todo        ║
+║   • hack         -> Simulación de intrusión     ║
+║   • bsod         -> Pantalla Azul (Cuidado!)    ║
+║   • shutdown     -> Apagar PC                   ║
+║                                                 ║
+║  <b>UTILIDADES</b>                                  ║
+║   • cls/clear    -> Limpiar pantalla            ║
+║   • time         -> Hora BIOS actual            ║
+║   • logo         -> Logo ASCII gigante          ║
+╚══════════════════════════════════════════════════╝
+<span style="color:#888">Tip: Usa TAB para autocompletar y ↑↓ para historial.</span></pre>`;
             break;
-        case 'start': case 'enter':
+
+        case 'start': 
+        case 'enter':
             responseDiv.style.color = "#05ffa1";
-            responseDiv.innerText = "Acceso concedido...";
-            setTimeout(() => terminalOverlay.style.display = 'none', 800);
+            responseDiv.innerText = "Iniciando Interfaz Gráfica...";
+            playSound('success');
+            setTimeout(() => {
+                terminalOverlay.style.display = 'none';
+                // Aquí podrías mostrar el resto de la página si estaba oculta
+                document.body.classList.add('ui-active');
+            }, 800);
             break;
+
         case 'status':
-            responseDiv.innerText = "SISTEMA: DOUZOZ 7 | MEMORIA: 99% Llena de Edits.";
+            const uptime = Math.floor(performance.now() / 1000);
+            responseDiv.innerHTML = `
+                <span style="color:#05ffa1;">🖥️ SISTEMA:</span> DOUZOZ 7 [Stable]<br>
+                <span style="color:#05ffa1;">🧠 MEMORIA:</span> ${(Math.random() * 10 + 80).toFixed(1)}% Usada<br>
+                <span style="color:#05ffa1;">⏳ UPTIME:</span> ${uptime} segundos<br>
+                <span style="color:#ff71ce;">❤️ AMOR:</span> Infinito<br>
+                <span style="color:#ffd700;">✨ BRILLO:</span> Máximo`;
             break;
-        case 'cls': case 'clear':
+
+        case 'cls': 
+        case 'clear':
             commandHistory.innerHTML = '';
-            return;
+            return; // No se añade nada más
+
         case 'ver':
-            responseDiv.innerText = "DOUZOZ 7 OS [v3.01.7601 - SP2 Vaporwave]";
+            responseDiv.innerText = "DOUZOZ 7 OS [v3.01.7601 - SP2 Vaporwave Edition]";
             break;
+
         case 'sysinfo':
-            responseDiv.innerHTML = `<span style="color:#05ffa1;">CPU:</span> PENTIUM IV 3.00GHz<br><span style="color:#05ffa1;">RAM:</span> 512MB DDR2<br><span style="color:#05ffa1;">GPU:</span> GeForce FX 5200<br><span style="color:#ff355e;">COPIA PIRATA NO ACTIVADA</span>`;
+            responseDiv.innerHTML = `
+                <div style="border-left: 3px solid #01cdfe; padding-left: 10px;">
+                    <span style="color:#05ffa1;">CPU:</span> PENTIUM IV YEYO EDITION 3.8GHz<br>
+                    <span style="color:#05ffa1;">RAM:</span> 512MB DDR2 (Overclocked)<br>
+                    <span style="color:#05ffa1;">GPU:</span> GeForce FX 5200 [Vaporwave Mode]<br>
+                    <span style="color:#05ffa1;">AUDIO:</span> Sound Blaster AE-9<br>
+                    <span style="color:#ff355e;">ESTADO:</span> COPIA PIRATA NO ACTIVADA (Pero funciona mejor así)<br>
+                    <span style="color:#ffd700;">MOD:</span> CAVE_CORE_LOADED
+                </div>`;
             break;
+
         case 'logo':
-            responseDiv.innerHTML = `<pre style="color: #ff71ce; font-weight: bold;">
+            responseDiv.innerHTML = `<pre style="color: #ff71ce; font-weight: bold; text-shadow: 0 0 10px #ff71ce;">
 ██████╗  ██████╗ ██╗   ██╗███████╗
 ██╔══██╗██╔═══██╗██║   ██║╚══███╔╝
 ██║  ██║██║   ██║██║   ██║  ███╔╝
 ██║  ██║██║   ██║██║   ██║ ███╔╝
 ██████╔╝╚██████╔╝╚██████╔╝███████╗
 ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝</pre>`;
+            playSound('beep');
             break;
+
         case 'time':
-            responseDiv.innerText = `Fecha BIOS: ${new Date().toLocaleString('es-ES')}`;
+            responseDiv.innerText = `Fecha BIOS: ${new Date().toLocaleString('es-AR')} (Hora de la Cueva)`;
             break;
+
         case 'yeyo':
             responseDiv.style.color = "#fff1be";
-            responseDiv.innerText = "⚡ YEYO CODE DETECTED: ¡Eso es rock, pibe!";
+            responseDiv.innerHTML = `
+                <span style="font-size: 20px;">⚡ YEYO CODE DETECTED ⚡</span><br>
+                ¡Eso es rock, pibe!<br>
+                <span style="color:#888; font-size: 12px;">[Sonido de guitarra eléctrica simulado]</span>`;
+            playSound('guitar');
             break;
+
         case 'yaoilover':
             executeYaoiloverProtocol();
-            return;
+            return; // Sale sin añadir div normal
+
         case 'whois_leo':
-            responseDiv.innerHTML = `<span style="color:#05ffa1;">FICHA: LEO KASPER</span><br>ID: LK-2007-X<br>Rol: Arquitecto Principal<br><span style="color:#ff355e;">Estado: DESCONECTADO</span>`;
+            responseDiv.innerHTML = `
+                <div style="background: rgba(0,0,0,0.5); border: 1px dashed #01cdfe; padding: 10px;">
+                    <span style="color:#05ffa1; font-weight:bold;">FICHA CLASIFICADA: LEO KASPER</span><br>
+                    ID: LK-2007-X<br>
+                    Rol: Arquitecto Principal / Dios del Código<br>
+                    Última Conexión: Hace 19 años<br>
+                    Estado: <span style="color:#ff355e;">DESCONECTADO (Pero siempre observando)</span><br>
+                    Nota: "Si lo encontrás, decile que le debo una cerveza."
+                </div>`;
             break;
+
         case 'note_final':
-            responseDiv.innerHTML = `<div style="border: 1px solid #ff71ce; padding: 10px; background: rgba(255, 113, 206, 0.05);">
-                <span style="color: #ff71ce; font-weight: bold;">[MEMORIA 0x08]</span><br>
-                De: Leo Kasper<br>Para: YaoiPornLover<br>Fecha: 14 Nov 2007<br><br>
-                Si estás leyendo esto, el script de apagado ya arrancó...<br>
-                Gracias por haberte quedado del otro lado de la pantalla.<br><br>
-                <i>- Leo Kasper.</i></div>`;
+            responseDiv.innerHTML = `
+                <div style="border: 1px solid #ff71ce; padding: 15px; background: rgba(255, 113, 206, 0.05); font-style: italic; color: #ddd;">
+                    <span style="color: #ff71ce; font-weight: bold; font-style: normal;">[MEMORIA 0x08 - INTERCEPTADA]</span><br><br>
+                    De: Leo Kasper<br>
+                    Para: YaoiPornLover<br>
+                    Fecha: 14 Nov 2007<br><br>
+                    Si estás leyendo esto, el script de apagado ya arrancó...<br>
+                    Gracias por haberte quedado del otro lado de la pantalla.<br>
+                    La cueva es tuya ahora.<br><br>
+                    <span style="color: #ff71ce; font-weight: bold; font-style: normal;">- Leo Kasper.</span>
+                </div>`;
+            playSound('sad_beep');
             break;
+
         case 'zork':
             responseDiv.innerHTML = ZorkGame.start();
             break;
+
         case 'matrix':
-            responseDiv.innerHTML = `<div style="color: #05ffa1;">01001000 01100101 01101100 01101100 01110100<br>[RESTAURANDO MEMORIA...]</div>`;
-            break;
-        case 'bsod':
-            document.body.innerHTML = `<div style="background:#0000aa; color:#fff; font-family:monospace; padding:30px; height:100vh;">
-                <p>DRIVER_IRQL_NOT_LESS_OR_EQUAL</p>
-                <p>*** STOP: 0x0000000A</p>
-                <p>*** KASPER_SYS.SYS</p></div>`;
+            responseDiv.innerHTML = `<div id="matrix-rain-container" style="height: 200px; overflow: hidden; position: relative; background: black; border: 1px solid #05ffa1;"></div>`;
+            commandHistory.appendChild(responseDiv);
+            startMatrixRain(document.getElementById('matrix-rain-container'));
             return;
+
+        case 'bsod':
+            document.body.innerHTML = `
+                <div style="background:#0000aa; color:#fff; font-family:'Lucida Console', Monaco, monospace; padding:30px; height:100vh; display:flex; flex-direction:column; justify-content:center;">
+                    <h1>A problem has been detected and Windows has been shut down to prevent damage to your computer.</h1>
+                    <p>DRIVER_IRQL_NOT_LESS_OR_EQUAL</p>
+                    <p>If this is the first time you've seen this stop error screen,<br>restart your computer. If this screen appears again, follow these steps:</p>
+                    <p>Check to make sure any new hardware or software is properly installed.<br>If this is a new installation, ask your hardware or software manufacturer for any Windows updates you might need.</p>
+                    <p>*** STOP: 0x0000000A (0x00000000, 0x00000002, 0x00000000, 0x804E4165)</p>
+                    <p>*** KASPER_SYS.SYS - Address 804E4165 base at 804D0000, DateStamp 46c8a4d5</p>
+                    <button onclick="location.reload()" style="margin-top:20px; padding:10px; cursor:pointer;">REINICIAR (Presiona F5)</button>
+                </div>`;
+            return;
+
         case 'shutdown':
             if (shutdownScreen) shutdownScreen.style.display = 'flex';
             responseDiv.style.color = "#ff71ce";
-            responseDiv.innerText = "Apagando DOUZOZ 7...";
+            responseDiv.innerText = "Apagando DOUZOZ 7... Adiós, hermano.";
+            playSound('power_off');
             break;
+
+        // --- NUEVOS COMANDOS ÉPICOS ---
+
+        case 'sudo':
+            if (args[1] === 'rm' && args[2] === '-rf' && args[3] === '/') {
+                responseDiv.style.color = "#ff355e";
+                responseDiv.innerText = "⛔ ACCESO DENEGADO. El Yeyo protege sus archivos.";
+                triggerTerminalGlitch();
+            } else {
+                responseDiv.innerText = "Usuario root requerido. Prueba con 'hack'.";
+            }
+            break;
+
+        case 'hack':
+            responseDiv.innerHTML = `<span style="color:#05ffa1;">Iniciando secuencia de intrusión...</span><br>`;
+            commandHistory.appendChild(responseDiv);
+            simulateHackSequence();
+            return;
+
+        case 'music':
+            responseDiv.style.color = "#ffd700";
+            responseDiv.innerText = "🎵 Reproduciendo: YeYo_Theme.mp3 [Volume: 11/10]";
+            // Aquí llamarías a tu reproductor de audio existente
+            if(typeof sfx !== 'undefined') sfx.playAchievement(); 
+            break;
+
+        case 'avatar':
+            const avatars = ['️ Hacker', ' Furry', ' Rey Yeyo', '☁️ Cloud Strife'];
+            const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+            responseDiv.innerHTML = `Cambias tu avatar a: <span style="font-size:24px;">${randomAvatar}</span>`;
+            break;
+
+        case 'lore':
+            responseDiv.innerHTML = `
+                <div style="max-width: 500px; line-height: 1.4;">
+                    <span style="color:#ff71ce; font-weight:bold;">LA HISTORIA DE LA CUEVA:</span><br>
+                    Todo comenzó en 2007, cuando Leo Kasper creó el primer servidor. 
+                    Luego llegó el Yeyo, quien transformó el código en arte. 
+                    Esta no es solo una web, es un santuario digital para los amantes del placer estético.
+                    Cada línea de código contiene un recuerdo.
+                </div>`;
+            break;
+
+        case 'credits':
+            responseDiv.innerHTML = `
+                <div style="text-align:center; color:#888;">
+                    <span style="color:#fff; font-weight:bold;">HECHO CON ❤️ Y ☕ POR:</span><br>
+                    👑 <span style="color:#ffd700;">YaoiPornLover</span> (Visión)<br>
+                    💻 <span style="color:#01cdfe;">Leo Kasper</span> (Arquitectura)<br>
+                    🎨 <span style="color:#ff71ce;">La Comunidad</span> (Inspiration)<br>
+                    <br><small>v9.0 Ultra Edition</small>
+                </div>`;
+            break;
+
+        case 'reboot':
+            responseDiv.innerText = "Reiniciando núcleo... Espere.";
+            setTimeout(() => location.reload(), 1000);
+            break;
+
         default:
             responseDiv.style.color = "#ff355e";
-            responseDiv.innerText = `'${cmd}' no reconocido. Escribe 'help'.`;
+            responseDiv.innerHTML = `'${cmd}' no reconocido.<br><span style="color:#888; font-size:12px;">${getRandomResponse('error')}</span>`;
+            triggerTerminalGlitch();
+            playSound('error');
     }
+    
     commandHistory.appendChild(responseDiv);
+    terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
 }
 
+// ==========================================
+// 4. FUNCIONES AUXILIARES (MATRIZ, HACK, SONIDOS)
+// ==========================================
+
+function startMatrixRain(container) {
+    const canvas = document.createElement('canvas');
+    canvas.width = container.offsetWidth;
+    canvas.height = 200;
+    container.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()";
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = Array.from({length: columns}).fill(1);
+
+    function draw() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#0f0';
+        ctx.font = fontSize + 'px monospace';
+
+        for (let i = 0; i < drops.length; i++) {
+            const text = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        }
+    }
+    
+    const interval = setInterval(draw, 33);
+    // Detener después de 5 segundos
+    setTimeout(() => clearInterval(interval), 5000);
+}
+
+function simulateHackSequence() {
+    const msgs = [
+        "Escaneando puertos...",
+        "Encontrando vulnerabilidad: CVE-2007-YEYO",
+        "Inyectando payload...",
+        "Bypassing Firewall...",
+        "ACCESO OBTENIDO 🔓"
+    ];
+    
+    let idx = 0;
+    const interval = setInterval(() => {
+        if (idx < msgs.length) {
+            const div = document.createElement('div');
+            div.style.color = "#05ffa1";
+            div.innerText = `[+] ${msgs[idx]}`;
+            commandHistory.appendChild(div);
+            terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+            idx++;
+        } else {
+            clearInterval(interval);
+            const finalDiv = document.createElement('div');
+            finalDiv.style.color = "#ffd700";
+            finalDiv.innerHTML = "<b>¡BIENVENIDO AL SISTEMA ROOT!</b>";
+            commandHistory.appendChild(finalDiv);
+        }
+    }, 400);
+}
+
+function playSound(type) {
+    // Usamos tu clase SFX existente o creamos un fallback simple
+    if (typeof sfx !== 'undefined') {
+        if (type === 'success') sfx.playTone(800, 'sine', 0.1);
+        if (type === 'error') sfx.playTone(150, 'sawtooth', 0.2);
+        if (type === 'beep') sfx.playTone(1000, 'square', 0.05);
+        if (type === 'guitar') { /* Simular acorde */ sfx.playTone(200, 'triangle', 0.5); setTimeout(()=>sfx.playTone(300, 'triangle', 0.5), 100);}
+    }
+}
+
+// ==========================================
+// 5. EVENT LISTENERS AVANZADOS (TECLADO)
+// ==========================================
+
 terminalInput.addEventListener('keydown', (e) => {
+    // ENTER: Ejecutar comando
     if (e.key === 'Enter') {
+        if (isTypingEffectActive) return; // Evitar spam durante animaciones
+        
         const cmd = terminalInput.value.trim().toLowerCase();
         terminalInput.value = '';
         if (cmd === '') return;
+        
         const historyLine = document.createElement('div');
         const promptSymbol = ZorkGame.active ? 'ZORK>' : 'KASPER:\\DOUZOZ7>';
-        historyLine.innerHTML = `<span class="prompt-symbol">${promptSymbol}</span> ${cmd}`;
+        historyLine.innerHTML = `<span class="prompt-symbol" style="color:#ff71ce;">${promptSymbol}</span> <span style="color:#fff;">${cmd}</span>`;
         commandHistory.appendChild(historyLine);
+        
         processCommand(cmd);
         terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
     }
+    
+    // TAB: Autocompletar
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const currentVal = terminalInput.value.toLowerCase();
+        const match = availableCommands.find(c => c.startsWith(currentVal));
+        if (match) {
+            terminalInput.value = match;
+        }
+    }
+    
+    // ARROW UP/DOWN: Historial
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (historyIndex > 0) {
+            historyIndex--;
+            terminalInput.value = commandHistoryStack[historyIndex];
+        }
+    }
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex < commandHistoryStack.length - 1) {
+            historyIndex++;
+            terminalInput.value = commandHistoryStack[historyIndex];
+        } else {
+            historyIndex = commandHistoryStack.length;
+            terminalInput.value = '';
+        }
+    }
 });
 
+// ==========================================
+// 6. PROTOCOLO YAOILOVER ULTRA MEJORADO
+// ==========================================
 function executeYaoiloverProtocol() {
     document.body.classList.add('yaoilover-mode');
+    
+    // Sonido inicial dramático
+    if (typeof sfx !== 'undefined') {
+        sfx.playTone(100, 'sawtooth', 0.5); // Bajo grave
+    }
+
     let count = 0;
+    const totalSpam = 40;
     const interval = setInterval(() => {
-        if (count < 40) {
+        if (count < totalSpam) {
             const spamLine = document.createElement('div');
             spamLine.className = 'cloud-spam-line';
-            spamLine.innerText = `[${count + 1}/40] Cloud Strife mi viejo we 🫦`;
+            
+            // Colores alternados para efecto psicodélico
+            const colors = ['#ff0055', '#00ffff', '#ffff00', '#ff71ce'];
+            spamLine.style.color = colors[count % colors.length];
+            spamLine.style.textShadow = `0 0 5px ${colors[count % colors.length]}`;
+            
+            spamLine.innerText = `[${count + 1}/${totalSpam}] Cloud Strife mi viejo we 🫦`;
             commandHistory.appendChild(spamLine);
             terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
             count++;
         } else {
             clearInterval(interval);
-            setTimeout(() => {
-                terminalOverlay.style.display = 'none';
-                shutdownScreen.style.display = 'flex';
-                setTimeout(() => {
-                    document.body.innerHTML = '';
-                    document.body.style.backgroundColor = '#000000';
-                }, 3500);
-            }, 1200);
+            
+            // Fase 2: Cuenta regresiva
+            const countdownDiv = document.createElement('div');
+            countdownDiv.style.cssText = "font-size: 24px; color: red; text-align: center; margin: 20px; font-weight: bold; animation: blink 0.5s infinite;";
+            countdownDiv.innerText = "ELIMINANDO REALIDAD... 3";
+            commandHistory.appendChild(countdownDiv);
+            
+            let seconds = 3;
+            const cdInterval = setInterval(() => {
+                seconds--;
+                if(seconds > 0) {
+                    countdownDiv.innerText = `ELIMINANDO REALIDAD... ${seconds}`;
+                } else {
+                    clearInterval(cdInterval);
+                    countdownDiv.remove();
+                    
+                    // Fase 3: Apagado
+                    terminalOverlay.style.display = 'none';
+                    if(shutdownScreen) shutdownScreen.style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        document.body.innerHTML = '';
+                        document.body.style.backgroundColor = '#000000';
+                        document.body.style.transition = 'background-color 2s ease';
+                    }, 3500);
+                }
+            }, 1000);
         }
     }, 40);
 }
