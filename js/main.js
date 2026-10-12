@@ -1393,25 +1393,321 @@ function triggerLockedSound(featureName) {
     sfx.playTone(150, 'sawtooth', 0.25);
     showAchievementToast({ icon: '🚧', title: 'ACCESO RESTRINGIDO', desc: `${featureName} está en construcción.` });
 }
-
 /* ================================================================
-   MÓDULO 14: TAPE DECK-9000 "ANALOG SOUL"
+   MÓDULO 13: PAGER MULTI-SKIN "ULTRA ENCRYPTED"
    ================================================================ */
 
-// Inyección de CSS para animaciones de cinta realistas
-const tapeCSS = `
-    @keyframes spinReel {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+// Inyección de CSS para efectos de pantalla LCD realista
+const pagerCSS = `
+    .pager-lcd-encrypt { font-family: 'Courier New', monospace; letter-spacing: 1px; }
+    .pager-low-battery { animation: blinkRed 1s infinite; color: #ff0000 !important; }
+    @keyframes blinkRed { 50% { opacity: 0.3; } }
+    .pager-chassis { transition: all 0.3s ease; }
+`;
+const pagerStyle = document.createElement("style");
+pagerStyle.innerText = pagerCSS;
+document.head.appendChild(pagerStyle);
+
+const glitchChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*¡!¿?";
+
+const pagerSkinData = {
+    gta3: {
+        brand: "LIBERTY CITY WIRELESS", title: "LC-PAGER", sticker: "🚕",
+        color: "#9bbc0f", bgColor: "#0f380f",
+        messages: [
+            "[8-BALL]: 'Tengo las bombas listas en Harwood.'",
+            "[EL BURRO]: 'Tengo un trabajo de carreras. Ve al muelle.'",
+            "[LCPD]: 'Unidad 12, sospechoso huyendo por Callahan.'",
+            "[LUIGI]: 'Vení al Club Sex-Jadd. Hay chicas nuevas.'",
+            "[PORTLAND]: 'El puente Callahan está cerrado. Nadie sale.'"
+        ]
+    },
+    argentina: {
+        brand: "LA SCALONETA 100% CRIOLLO", title: "MATE-PAGER", sticker: "🧉",
+        color: "#75aadb", bgColor: "#ffffff",
+        messages: [
+            "🇦🇷 [Yaoilover]: 'Prendé el fuego pibe, que esto se pone bueno.'",
+            "⚽ [Scaloni]: 'Muchachos, hoy se juega con el alma. Vamos carajo.'",
+            "🏆 [Dibu]: 'Mirá que te como, hermano. Soy el mejor del mundo.'",
+            "🎵 [Cumbia]: 'Sonando la cumbia en la villa, no hay quien nos pare.'",
+            "🥩 [La Vaga]: 'Saludos desde la pileta. Asado a las 14hs.'"
+        ]
+    },
+    matrix: {
+        brand: "NEBUCHADNEZZAR COMM", title: "MATRIX-NET", sticker: "🕶️",
+        color: "#00ff41", bgColor: "#000000",
+        messages: [
+            "[Morpheus]: 'Tomás la pastilla roja. La verdad te liberará.'",
+            "[Trinity]: 'El agente Smith está rastreando tu señal. Desconectate.'",
+            "[Cypher]: 'La ignorancia es una bendición. El bistec es jugoso.'",
+            "[System]: 'Conexión cuántica establecida. Bienvenido al Desierto de lo Real.'"
+        ]
+    },
+    yeyo_gold: {
+        brand: "YEYO SUPREME CORP", title: "GOLD-PAGER", sticker: "👑",
+        color: "#ffd700", bgColor: "#1a1a1a",
+        messages: [
+            "👑 [YEYO]: 'La cueva es tuya, hermano. Disfrutá el placer.'",
+            "⚡ [YEYO]: 'Código secreto activado. Modo Dios: ON.'",
+            "🔥 [YEYO]: 'Leo Kasper estaría orgulloso de este edit.'",
+            "🌈 [YEYO]: 'Diversidad y buen gusto. Esa es la ley de la Cueva.'"
+        ]
+    },
+    protogen: {
+        brand: "CYBER CANINE SYS", title: "PROTO-VISOR", sticker: "🐺",
+        color: "#00ffff", bgColor: "#000000",
+        messages: [
+            "[Sistema]: 'Visor LED: 100%. Pelaje sintético: Estable.'",
+            "[Dueño]: 'Buen chico. Toma tu premio digital.'",
+            "[Alerta]: 'Niveles de 'uwu' detectados: CRÍTICOS.'",
+            "[Red]: 'Conectado a la red furry global. Ronroneo activado.'"
+        ]
     }
+};
+
+let currentSkin = 'gta3';
+let currentMsgIdx = 0;
+let isBacklightOn = true;
+let pagerBattery = 100;
+let batteryDrainInterval = null;
+
+function startBatteryDrain() {
+    if (batteryDrainInterval) clearInterval(batteryDrainInterval);
+    batteryDrainInterval = setInterval(() => {
+        if (pagerBattery > 0) {
+            pagerBattery -= 1;
+            updateBatteryUI();
+        } else {
+            clearInterval(batteryDrainInterval);
+            document.getElementById('pager-display-text').innerText = "BATERÍA AGOTADA. CARGAR.";
+            playTone(200, 0.5);
+        }
+    }, 30000); // Baja 1% cada 30 segundos
+}
+
+function updateBatteryUI() {
+    const batteryText = document.getElementById('pager-battery-text');
+    batteryText.innerText = `🔋 ${pagerBattery}%`;
+    if (pagerBattery <= 20) {
+        batteryText.classList.add('pager-low-battery');
+    } else {
+        batteryText.classList.remove('pager-low-battery');
+    }
+}
+
+function setPagerSkin(skinName, event) {
+    if (pagerBattery <= 0) {
+        alert("⚠️ ¡Batería agotada! Carga el pager primero.");
+        return;
+    }
+    currentSkin = skinName;
+    currentMsgIdx = 0;
+    
+    if (event && event.target) {
+        document.querySelectorAll('.skin-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+    
+    const chassis = document.getElementById('pager-hardware');
+    if (chassis) chassis.className = `pager-chassis skin-${skinName}`;
+    
+    const data = pagerSkinData[skinName];
+    document.getElementById('pager-brand-display').innerText = data.brand;
+    document.getElementById('pager-skin-title').innerText = data.title;
+    document.getElementById('pager-sticker-slot').innerText = data.sticker;
+    
+    // Aplicar colores de LCD dinámicamente
+    const lcdBox = document.getElementById('pager-lcd-box');
+    if (lcdBox) {
+        lcdBox.style.color = data.color;
+        lcdBox.style.backgroundColor = data.bgColor;
+        lcdBox.style.boxShadow = `inset 0 0 10px ${data.color}40`;
+    }
+    
+    updatePagerLCD();
+    playPagerSFXForSkin(skinName);
+}
+
+// Efecto de desencriptado de texto
+function decryptText(element, finalText, duration = 800) {
+    let iterations = 0;
+    const interval = setInterval(() => {
+        element.innerText = finalText.split("").map((char, index) => {
+            if (index < iterations) return finalText[index];
+            return glitchChars[Math.floor(Math.random() * glitchChars.length)];
+        }).join("");
+        
+        if (iterations >= finalText.length) {
+            clearInterval(interval);
+            element.classList.remove('pager-lcd-encrypt');
+        } else {
+            element.classList.add('pager-lcd-encrypt');
+        }
+        iterations += 1 / 1.5; // Velocidad de desencriptado
+    }, 30);
+}
+
+function updatePagerLCD() {
+    if (pagerBattery <= 0) return;
+    const data = pagerSkinData[currentSkin];
+    const display = document.getElementById('pager-display-text');
+    
+    decryptText(display, data.messages[currentMsgIdx]);
+    document.getElementById('pager-msg-counter').innerText = `MSG: ${currentMsgIdx + 1}/${data.messages.length}`;
+}
+
+function pagerNextMsg() {
+    if (pagerBattery <= 0) return;
+    const max = pagerSkinData[currentSkin].messages.length;
+    currentMsgIdx = (currentMsgIdx + 1) % max;
+    updatePagerLCD();
+    playTone(900, 0.04);
+    pagerBattery = Math.max(0, pagerBattery - 1); // Usar batería
+    updateBatteryUI();
+}
+
+function pagerPrevMsg() {
+    if (pagerBattery <= 0) return;
+    const max = pagerSkinData[currentSkin].messages.length;
+    currentMsgIdx = (currentMsgIdx - 1 + max) % max;
+    updatePagerLCD();
+    playTone(700, 0.04);
+}
+
+function togglePagerLight() {
+    if (pagerBattery <= 0) return;
+    isBacklightOn = !isBacklightOn;
+    const box = document.getElementById('pager-lcd-box');
+    if (isBacklightOn) { 
+        box.classList.remove('backlight-off'); 
+        box.classList.add('backlight-on'); 
+        box.style.opacity = "1";
+    } else { 
+        box.classList.remove('backlight-on'); 
+        box.classList.add('backlight-off'); 
+        box.style.opacity = "0.3";
+    }
+    playTone(1200, 0.03);
+}
+
+function chargePagerBattery() {
+    pagerBattery = 100;
+    updateBatteryUI();
+    
+    // Efecto visual de carga
+    const batteryText = document.getElementById('pager-battery-text');
+    batteryText.innerText = "⚡ CARGANDO...";
+    playTone(1500, 0.1);
+    setTimeout(() => {
+        batteryText.innerText = "🔋 100%";
+        playTone(2000, 0.1);
+    }, 1000);
+}
+
+function playPagerAlert() {
+    if (pagerBattery <= 0) return;
+    if (navigator.vibrate) {
+        if (currentSkin === 'gta3') navigator.vibrate([100, 50, 100, 50, 300]);
+        else if (currentSkin === 'argentina') navigator.vibrate([200, 100, 200]);
+        else navigator.vibrate([150, 150, 150]);
+    }
+    
+    // Sonidos polifónicos simples
+    if (currentSkin === 'gta3') {
+        playTone(1000, 0.1); setTimeout(() => playTone(1400, 0.1), 120); setTimeout(() => playTone(800, 0.2), 240);
+    } else if (currentSkin === 'argentina') {
+        playTone(523, 0.08); setTimeout(() => playTone(659, 0.08), 90); setTimeout(() => playTone(783, 0.15), 180);
+    } else if (currentSkin === 'yeyo_gold') {
+        playTone(880, 0.1); setTimeout(() => playTone(1100, 0.1), 100); setTimeout(() => playTone(1320, 0.2), 200);
+    } else {
+        playTone(1200, 0.15);
+    }
+}
+
+function pressPagerKey(n) {
+    if (pagerBattery <= 0) return;
+    const inp = document.getElementById('pager-code-input');
+    if (inp.value.length < 4) { 
+        inp.value += n; 
+        playTone(800 + (n * 50), 0.03); 
+    }
+}
+
+function clearPagerKey() {
+    if (pagerBattery <= 0) return;
+    document.getElementById('pager-code-input').value = '';
+    playTone(400, 0.04);
+}
+
+function sendPagerCode() {
+    if (pagerBattery <= 0) {
+        alert("⚠️ Sin batería. No se puede procesar.");
+        return;
+    }
+    const code = document.getElementById('pager-code-input').value;
+    
+    // Easter Eggs de códigos
+    if (code === '1978' || code === '1986' || code === '2022') {
+        alert("🇦🇷 ¡MUCHACHOS! Modo Campeón Activado. La Scaloneta te saluda.");
+        setPagerSkin('argentina');
+    } else if (code === '0351') {
+        alert("🚕 CÓDIGO GTA 3: 'Ah, shit, here we go again.'");
+        setPagerSkin('gta3');
+    } else if (code === '9999') {
+        alert("👑 CÓDIGO YEYO: Acceso Supremo Concedido. Bienvenido, Arquitecto.");
+        setPagerSkin('yeyo_gold');
+    } else if (code === '1010') {
+        alert("🐺 CÓDIGO FURRY: Modo Protogen Activado. UwU");
+        setPagerSkin('protogen');
+    } else if (code.length > 0) {
+        alert(`📟 CÓDIGO [${code}] PROCESADO. Mensaje enviado a la red.`);
+    }
+    
+    document.getElementById('pager-code-input').value = '';
+    pagerBattery = Math.max(0, pagerBattery - 2); // Costo de enviar
+    updateBatteryUI();
+}
+
+function playTone(freq, duration) {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.04, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
+        osc.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + duration);
+    } catch(e) {}
+}
+
+function playPagerSFXForSkin(skin) {
+    if (skin === 'gta3') playTone(1100, 0.08);
+    else if (skin === 'argentina') playTone(880, 0.1);
+    else if (skin === 'yeyo_gold') playTone(1320, 0.1);
+    else playTone(600, 0.05);
+}
+
+// Iniciar drenaje de batería al cargar
+startBatteryDrain();
+
+/* ================================================================
+   MÓDULO 14: TAPE DECK-9000 "ANALOG SOUL" (CON CARGA LOCAL)
+   ================================================================ */
+
+// 1. Inyección de CSS para animaciones de cinta realistas
+const tapeCSS = `
+    @keyframes spinReel { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .reel-spinning-left { animation: spinReel 2s linear infinite; }
     .reel-spinning-right { animation: spinReel 2s linear infinite reverse; }
-    .tape-deck-glow { box-shadow: 0 0 15px rgba(255, 113, 206, 0.5); }
+    .tape-deck-glow { box-shadow: 0 0 20px rgba(5, 255, 161, 0.6), inset 0 0 15px rgba(5, 255, 161, 0.2); }
 `;
 const tapeStyle = document.createElement("style");
 tapeStyle.innerText = tapeCSS;
 document.head.appendChild(tapeStyle);
 
+// 2. Playlist Predefinida (Cambia las URLs por tus archivos locales ej: "music/tema1.mp3")
 const cuevaTapePlaylist = [
     { id: 1, title: "01. CUEVA CYBERPUNK BEATS", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", skin: "skin-neon" },
     { id: 2, title: "02. PORTLAND NIGHTS", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", skin: "skin-gold" },
@@ -1422,42 +1718,47 @@ const cuevaTapePlaylist = [
 let currentTapeIndex = 0;
 let isTapePlaying = false;
 let tapeAudio = new Audio();
-tapeAudio.crossOrigin = "anonymous"; // Necesario para Web Audio API
+tapeAudio.crossOrigin = "anonymous"; // Importante para Web Audio API
 let tapeCounter = 0;
 let counterInterval = null;
 
-// Web Audio API para VU Meters Reales y Tape Hiss
+// Variables Web Audio API (VU Meters Reales + Tape Hiss)
 let audioCtx, analyser, dataArray, hissNode, hissGain;
 
 function initTapeAudioContext() {
     if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const source = audioCtx.createMediaElementSource(tapeAudio);
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 64;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-        
-        // Crear ruido de cinta (Tape Hiss)
-        const bufferSize = audioCtx.sampleRate * 2;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = Math.random() * 2 - 1;
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioCtx.createMediaElementSource(tapeAudio);
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 64;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            
+            // Generar ruido de cinta (Tape Hiss) analógico
+            const bufferSize = audioCtx.sampleRate * 2;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1; // Ruido blanco
+            }
+            hissNode = audioCtx.createBufferSource();
+            hissNode.buffer = buffer;
+            hissNode.loop = true;
+            hissGain = audioCtx.createGain();
+            hissGain.gain.value = 0.015; // Volumen sutil y realista
+            
+            hissNode.connect(hissGain);
+            hissGain.connect(audioCtx.destination);
+        } catch (e) {
+            console.warn("Web Audio API no soportada o bloqueada:", e);
         }
-        hissNode = audioCtx.createBufferSource();
-        hissNode.buffer = buffer;
-        hissNode.loop = true;
-        hissGain = audioCtx.createGain();
-        hissGain.gain.value = 0.02; // Volumen sutil del ruido
-        
-        hissNode.connect(hissGain);
-        hissGain.connect(audioCtx.destination);
     }
 }
 
+// 3. Event Listeners del Audio
 tapeAudio.addEventListener('timeupdate', () => {
     if (!tapeAudio.duration) return;
     const currSecs = tapeAudio.currentTime;
@@ -1480,10 +1781,11 @@ tapeAudio.addEventListener('ended', () => {
     setTimeout(() => {
         currentTapeIndex = (currentTapeIndex + 1) % cuevaTapePlaylist.length;
         loadTapeTrack(currentTapeIndex);
-        playTape(); // Auto-play siguiente
+        playTape(); // Auto-reverse: reproduce la siguiente
     }, 800);
 });
 
+// 4. Funciones de Utilidad
 function formatTapeTime(seconds) {
     if (isNaN(seconds)) return "00:00";
     const m = Math.floor(seconds / 60);
@@ -1517,7 +1819,9 @@ function loadTapeTrack(index) {
     currentTapeIndex = index;
     const track = cuevaTapePlaylist[index];
     tapeAudio.src = track.file;
-    tapeAudio.playbackRate = parseFloat(document.getElementById('tape-pitch-select')?.value || 1.0);
+    
+    const pitchSelect = document.getElementById('tape-pitch-select');
+    tapeAudio.playbackRate = pitchSelect ? parseFloat(pitchSelect.value) : 1.0;
     
     const titleEl = document.getElementById('cassette-title-display');
     const deckNameEl = document.getElementById('deck-song-name');
@@ -1533,12 +1837,13 @@ function loadTapeTrack(index) {
     resetTapeCounter();
 }
 
+// 5. Controles Principales del Deck
 function playTape() {
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     if (!tapeAudio.src) loadTapeTrack(0);
     
     initTapeAudioContext();
-    tapeAudio.play();
+    tapeAudio.play().catch(e => console.log("Interacción requerida para audio"));
     if (hissNode) hissNode.start();
     
     isTapePlaying = true;
@@ -1563,7 +1868,7 @@ function playTape() {
 
 function pauseTape() {
     tapeAudio.pause();
-    if (hissNode) hissNode.stop(); // Detener ruido de cinta
+    if (hissNode) { try { hissNode.stop(); } catch(e){} } // Detener ruido de cinta
     
     isTapePlaying = false;
     const door = document.getElementById('deck-door');
@@ -1581,7 +1886,7 @@ function pauseTape() {
 function stopTape() {
     tapeAudio.pause();
     tapeAudio.currentTime = 0;
-    if (hissNode) hissNode.stop();
+    if (hissNode) { try { hissNode.stop(); } catch(e){} }
     
     isTapePlaying = false;
     const door = document.getElementById('deck-door');
@@ -1620,10 +1925,11 @@ function ejectCassette() {
 
 function fastForwardTape() { 
     if (tapeAudio.src) { 
-        tapeAudio.currentTime = Math.min(tapeAudio.duration, tapeAudio.currentTime + 10); 
+        tapeAudio.currentTime = Math.min(tapeAudio.duration || 0, tapeAudio.currentTime + 10); 
         playMechanicalSFX('whir'); 
     } 
 }
+
 function rewindTape() { 
     if (tapeAudio.src) { 
         tapeAudio.currentTime = Math.max(0, tapeAudio.currentTime - 10); 
@@ -1631,6 +1937,7 @@ function rewindTape() {
     } 
 }
 
+// 6. Contador Mecánico
 function startCounter() {
     stopCounter();
     counterInterval = setInterval(() => {
@@ -1668,15 +1975,15 @@ function updateSpoolSizes(pct) {
     if (sRight) { sRight.style.width = `${rightSize}px`; sRight.style.height = `${rightSize}px`; }
 }
 
-// ¡VU METERS REALES CON WEB AUDIO API!
+// 7. VU METERS REALES (Reaccionan a la música)
 function startRealVUMeters() {
     if (!isTapePlaying || !analyser) return;
     
     analyser.getByteFrequencyData(dataArray);
     
-    // Promedio de frecuencias bajas (graves) para la aguja izquierda
+    // Promedio de frecuencias bajas (graves) -> Aguja Izquierda
     const leftAvg = dataArray.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
-    // Promedio de frecuencias altas (agudos) para la aguja derecha
+    // Promedio de frecuencias altas (agudos) -> Aguja Derecha
     const rightAvg = dataArray.slice(10, 20).reduce((a, b) => a + b, 0) / 10;
     
     // Mapear 0-255 a un rango de -30 a 30 grados
@@ -1691,6 +1998,7 @@ function startRealVUMeters() {
     requestAnimationFrame(startRealVUMeters);
 }
 
+// 8. Efectos de Sonido Mecánicos (Sintetizados)
 function playMechanicalSFX(type) {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1727,105 +2035,51 @@ function playMechanicalSFX(type) {
     } catch(e) {}
 }
 
-// Cargar primera pista al iniciar (sin reproducir)
+// 9. FUNCIÓN ESTRELLA: CARGAR MP3 LOCAL DESDE LA PC DEL USUARIO
+const fileInput = document.getElementById('custom-mp3-upload');
+if (fileInput) {
+    fileInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            // Crear una URL temporal para el archivo subido
+            const objectUrl = URL.createObjectURL(file);
+            
+            // Detener lo que esté sonando
+            stopTape();
+            
+            // Sobrescribir la pista actual con el archivo del usuario
+            tapeAudio.src = objectUrl;
+            
+            // Actualizar la interfaz
+            const titleEl = document.getElementById('cassette-title-display');
+            const deckNameEl = document.getElementById('deck-song-name');
+            const fileNameEl = document.getElementById('custom-file-name');
+            
+            const cleanName = file.name.replace(/\.[^/.]+$/, ""); // Quitar extensión .mp3
+            if(titleEl) titleEl.innerText = "📂 " + cleanName.toUpperCase();
+            if(deckNameEl) deckNameEl.innerText = "CUSTOM TRACK";
+            if(fileNameEl) fileNameEl.innerText = "Cargado: " + file.name;
+            
+            // Forzar skin "neon" para tracks personalizados
+            const cassetteEl = document.getElementById('active-cassette');
+            if(cassetteEl) cassetteEl.className = `cassette-body skin-neon`;
+            
+            resetTapeCounter();
+            
+            // Reproducir automáticamente después de un breve delay mecánico
+            setTimeout(() => {
+                playTape();
+            }, 600);
+            
+            playMechanicalSFX('click');
+        }
+    });
+}
+
+// Inicializar primera pista al cargar la página (sin reproducir)
 loadTapeTrack(0);
 
-/* ================================================================
-   MÓDULO 15: RELOJ SUPREMO + GEO IP + ANTI-ESTRÉS
-   ================================================================ */
-let clockTheme = 'vaporwave';
-
-function setClockTheme(theme) {
-    clockTheme = theme;
-    const box = document.getElementById('clock-display-box');
-    const digitalView = document.getElementById('digital-clock-view');
-    const analogView = document.getElementById('analog-clock-view');
-    document.querySelectorAll('.clk-mode-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    box.className = `clock-display-screen theme-${theme}`;
-    if (theme === 'analog') { digitalView.style.display = 'none'; analogView.style.display = 'block'; }
-    else { digitalView.style.display = 'block'; analogView.style.display = 'none'; }
-    sfx.playClick();
-}
-
-function updateClockLogic() {
-    const now = new Date();
-    const hrs = String(now.getHours()).padStart(2, '0');
-    const mins = String(now.getMinutes()).padStart(2, '0');
-    const secs = String(now.getSeconds()).padStart(2, '0');
-    document.getElementById('clock-time-text').innerText = `${hrs}:${mins}:${secs}`;
-    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-    document.getElementById('clock-date-text').innerText = now.toLocaleDateString('es-ES', options).toUpperCase();
-    const secDeg = (now.getSeconds() / 60) * 360;
-    const minDeg = ((now.getMinutes() + now.getSeconds() / 60) / 60) * 360;
-    const hrDeg = ((now.getHours() % 12 + now.getMinutes() / 60) / 12) * 360;
-    const secHand = document.getElementById('second-hand');
-    const minHand = document.getElementById('minute-hand');
-    const hrHand = document.getElementById('hour-hand');
-    if (secHand) secHand.setAttribute('transform', `rotate(${secDeg} 50 50)`);
-    if (minHand) minHand.setAttribute('transform', `rotate(${minDeg} 50 50)`);
-    if (hrHand) hrHand.setAttribute('transform', `rotate(${hrDeg} 50 50)`);
-}
-setInterval(updateClockLogic, 1000);
-updateClockLogic();
-
-async function fetchUserGeoData() {
-    try {
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
-        if (data.ip) {
-            document.getElementById('user-ip-display').innerText = data.ip;
-            document.getElementById('user-location-display').innerText = `${data.city}, ${data.region}, ${data.country_name}`;
-            document.getElementById('user-isp-display').innerText = `ISP: ${data.org || 'Desconocido'}`;
-            document.getElementById('clock-ip-status').innerText = '🟢 IP RASTREADA';
-            if (data.country_code) {
-                document.getElementById('user-flag').innerHTML = `<img src="https://flagcdn.com/24x18/${data.country_code.toLowerCase()}.png" alt="flag" style="vertical-align:middle; border-radius:2px;">`;
-            }
-            if (data.latitude && data.longitude) fetchWeather(data.latitude, data.longitude);
-        }
-    } catch (err) {
-        document.getElementById('user-ip-display').innerText = '127.0.0.1';
-        document.getElementById('user-location-display').innerText = 'Cueva Secreta';
-        document.getElementById('clock-ip-status').innerText = '⚠️ MODEM BLINDADO';
-    }
-}
-
-async function fetchWeather(lat, lon) {
-    try {
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-        const wData = await res.json();
-        if (wData.current_weather) {
-            const temp = Math.round(wData.current_weather.temperature);
-            document.getElementById('user-weather-display').innerText = `${temp}°C 🌤️`;
-        }
-    } catch (e) {
-        document.getElementById('user-weather-display').innerText = '24°C ☀️';
-    }
-}
-fetchUserGeoData();
-
-let stressClicks = 0;
-const stressComments = [
-    "Eso pibe... dale con ganas.",
-    "El Yeyo aprueba tu spameo.",
-    "¿Ya te sentís más relajado?",
-    "¡Cuidado que vas a romper el botón!",
-    "Nivel de rabia bajando al 50%...",
-    "¡Eso es rock, pibe!",
-    "DESBLOQUEASTE EL MODO ZEN MÁXIMO."
-];
-
-document.getElementById('anti-stress-btn').addEventListener('click', () => {
-    stressClicks++;
-    document.getElementById('stress-counter-badge').innerText = `(${stressClicks} Clicks)`;
-    const commentIndex = Math.min(Math.floor(stressClicks / 5), stressComments.length - 1);
-    document.getElementById('stress-comment').innerText = `"${stressComments[commentIndex]}"`;
-    sfx.playClick();
-    if (stressClicks === 50) {
-        showAchievementToast({ icon: '🧘‍♂️', title: 'MAESTRO ZEN', desc: 'Presionaste 50 veces. Paz reina.' });
-    }
-});
-
+v
 /* ================================================================
    MÓDULO 16: SIDEBAR TERMINAL OS MULTI-ARQUITECTURA
    ================================================================ */
