@@ -2079,7 +2079,7 @@ if (fileInput) {
 // Inicializar primera pista al cargar la página (sin reproducir)
 loadTapeTrack(0);
 
-v
+
 /* ================================================================
    MÓDULO 16: SIDEBAR TERMINAL OS MULTI-ARQUITECTURA
    ================================================================ */
