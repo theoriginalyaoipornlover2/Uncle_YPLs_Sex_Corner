@@ -1395,182 +1395,94 @@ function triggerLockedSound(featureName) {
 }
 
 /* ================================================================
-   MÓDULO 13: PAGER MULTI-SKIN
+   MÓDULO 14: TAPE DECK-9000 "ANALOG SOUL"
    ================================================================ */
-const pagerSkinData = {
-    gta3: {
-        brand: "LIBERTY CITY WIRELESS", title: "LC-PAGER", sticker: "🚕",
-        messages: [
-            "[8-BALL]: 'Tengo las bombas listas en Harwood.'",
-            "[EL BURRO]: 'Tengo un trabajo de carreras.'",
-            "[LCPD]: 'Unidad 12, sospechoso huyendo.'",
-            "[LUIGI]: 'Vení al Club Sex-Jadd.'",
-            "[PORTLAND]: 'El puente Callahan cerrado.'"
-        ]
-    },
-    argentina: {
-        brand: "LA SCALONETA 100% CRIOLLO", title: "MATE-PAGER", sticker: "🧉",
-        messages: [
-            "🇦🇷 [Yaoilover]: 'Prendé el fuego pibe.'",
-            "⚽ [Scaloni]: 'Muchachos, hoy se juega con el alma.'",
-            "🏆 [Dibu]: 'Mirá que te como, hermano.'",
-            "🎵 [Cumbia]: 'Sonando la cumbia.'",
-            "🥩 [La Vaga]: 'Saludos desde la pileta.'"
-        ]
-    },
-    matrix: {
-        brand: "NEBUCHADNEZZAR COMM", title: "MATRIX-NET", sticker: "🕶️",
-        messages: [
-            "[Morpheus]: 'Tomás la pastilla roja.'",
-            "[Trinity]: 'El agente Smith está rastreando.'",
-            "[Cypher]: 'La ignorancia es una bendición.'",
-            "[System]: 'Conexión cuántica establecida.'"
-        ]
-    },
-    classic: {
-        brand: "MOTOROLA BEEPER 90s", title: "BEEPER-90", sticker: "📟",
-        messages: [
-            "🚨 [Estado]: Disfrutando el Sol 🌴",
-            "📩 [YaoiLover]: 'Llamame al teléfono.'",
-            "⚠️ [Sistema]: Mensaje de prueba P2P."
-        ]
+
+// Inyección de CSS para animaciones de cinta realistas
+const tapeCSS = `
+    @keyframes spinReel {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
-};
+    .reel-spinning-left { animation: spinReel 2s linear infinite; }
+    .reel-spinning-right { animation: spinReel 2s linear infinite reverse; }
+    .tape-deck-glow { box-shadow: 0 0 15px rgba(255, 113, 206, 0.5); }
+`;
+const tapeStyle = document.createElement("style");
+tapeStyle.innerText = tapeCSS;
+document.head.appendChild(tapeStyle);
 
-let currentSkin = 'gta3';
-let currentMsgIdx = 0;
-let isBacklightOn = true;
-let pagerBattery = 98;
-
-function setPagerSkin(skinName) {
-    currentSkin = skinName;
-    currentMsgIdx = 0;
-    document.querySelectorAll('.skin-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    const chassis = document.getElementById('pager-hardware');
-    chassis.className = `pager-chassis skin-${skinName}`;
-    const data = pagerSkinData[skinName];
-    document.getElementById('pager-brand-display').innerText = data.brand;
-    document.getElementById('pager-skin-title').innerText = data.title;
-    document.getElementById('pager-sticker-slot').innerText = data.sticker;
-    updatePagerLCD();
-    playPagerSFXForSkin(skinName);
-}
-
-function updatePagerLCD() {
-    const data = pagerSkinData[currentSkin];
-    document.getElementById('pager-display-text').innerText = data.messages[currentMsgIdx];
-    document.getElementById('pager-msg-counter').innerText = `MSG: ${currentMsgIdx + 1}/${data.messages.length}`;
-}
-
-function pagerNextMsg() {
-    const max = pagerSkinData[currentSkin].messages.length;
-    currentMsgIdx = (currentMsgIdx + 1) % max;
-    updatePagerLCD();
-    playTone(900, 0.04);
-}
-
-function pagerPrevMsg() {
-    const max = pagerSkinData[currentSkin].messages.length;
-    currentMsgIdx = (currentMsgIdx - 1 + max) % max;
-    updatePagerLCD();
-    playTone(700, 0.04);
-}
-
-function togglePagerLight() {
-    isBacklightOn = !isBacklightOn;
-    const box = document.getElementById('pager-lcd-box');
-    if (isBacklightOn) { box.classList.remove('backlight-off'); box.classList.add('backlight-on'); }
-    else { box.classList.remove('backlight-on'); box.classList.add('backlight-off'); }
-    playTone(1200, 0.03);
-}
-
-function chargePagerBattery() {
-    pagerBattery = 100;
-    document.getElementById('pager-battery-text').innerText = `🔋 100%`;
-    alert("⚡ ¡Batería cargada!");
-    playTone(1500, 0.1);
-}
-
-function playPagerAlert() {
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    if (currentSkin === 'gta3') {
-        playTone(1000, 0.1);
-        setTimeout(() => playTone(1400, 0.1), 120);
-        setTimeout(() => playTone(800, 0.2), 240);
-    } else if (currentSkin === 'argentina') {
-        playTone(523, 0.08);
-        setTimeout(() => playTone(659, 0.08), 90);
-        setTimeout(() => playTone(783, 0.15), 180);
-    } else {
-        playTone(1200, 0.15);
-    }
-}
-
-function pressPagerKey(n) {
-    const inp = document.getElementById('pager-code-input');
-    if (inp.value.length < 4) { inp.value += n; playTone(800, 0.03); }
-}
-
-function clearPagerKey() {
-    document.getElementById('pager-code-input').value = '';
-    playTone(400, 0.04);
-}
-
-function sendPagerCode() {
-    const code = document.getElementById('pager-code-input').value;
-    if (code === '1978' || code === '1986' || code === '2022') alert("🇦🇷 ¡MUCHACHOS! Modo Campeón.");
-    else if (code === '0351') alert("🚕 CÓDIGO GTA 3.");
-    else if (code.length > 0) alert(`📟 CÓDIGO [${code}] PROCESADO.`);
-    document.getElementById('pager-code-input').value = '';
-}
-
-function playTone(freq, duration) {
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const g = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.value = freq;
-        g.gain.setValueAtTime(0.04, ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + duration);
-        osc.connect(g); g.connect(ctx.destination);
-        osc.start(); osc.stop(ctx.currentTime + duration);
-    } catch(e) {}
-}
-
-function playPagerSFXForSkin(skin) {
-    if (skin === 'gta3') playTone(1100, 0.08);
-    else if (skin === 'argentina') playTone(880, 0.1);
-    else playTone(600, 0.05);
-}
-
-/* ================================================================
-   MÓDULO 14: TAPE DECK-9000
-   ================================================================ */
 const cuevaTapePlaylist = [
     { id: 1, title: "01. CUEVA CYBERPUNK BEATS", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", skin: "skin-neon" },
     { id: 2, title: "02. PORTLAND NIGHTS", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", skin: "skin-gold" },
-    { id: 3, title: "03. METAL SLUG MISSION", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", skin: "skin-red" }
+    { id: 3, title: "03. METAL SLUG MISSION", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", skin: "skin-red" },
+    { id: 4, title: "04. YEYO VAPORWAVE MIX", file: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", skin: "skin-purple" }
 ];
+
 let currentTapeIndex = 0;
 let isTapePlaying = false;
 let tapeAudio = new Audio();
+tapeAudio.crossOrigin = "anonymous"; // Necesario para Web Audio API
 let tapeCounter = 0;
 let counterInterval = null;
+
+// Web Audio API para VU Meters Reales y Tape Hiss
+let audioCtx, analyser, dataArray, hissNode, hissGain;
+
+function initTapeAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaElementSource(tapeAudio);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        
+        // Crear ruido de cinta (Tape Hiss)
+        const bufferSize = audioCtx.sampleRate * 2;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        hissNode = audioCtx.createBufferSource();
+        hissNode.buffer = buffer;
+        hissNode.loop = true;
+        hissGain = audioCtx.createGain();
+        hissGain.gain.value = 0.02; // Volumen sutil del ruido
+        
+        hissNode.connect(hissGain);
+        hissGain.connect(audioCtx.destination);
+    }
+}
 
 tapeAudio.addEventListener('timeupdate', () => {
     if (!tapeAudio.duration) return;
     const currSecs = tapeAudio.currentTime;
     const totalSecs = tapeAudio.duration;
-    document.getElementById('current-time-text').innerText = formatTapeTime(currSecs);
-    document.getElementById('total-duration-text').innerText = formatTapeTime(totalSecs);
+    
+    const timeEl = document.getElementById('current-time-text');
+    const totalEl = document.getElementById('total-duration-text');
+    if(timeEl) timeEl.innerText = formatTapeTime(currSecs);
+    if(totalEl) totalEl.innerText = formatTapeTime(totalSecs);
+    
     const pct = (currSecs / totalSecs) * 100;
-    document.getElementById('progress-fill').style.width = `${pct}%`;
+    const progressEl = document.getElementById('progress-fill');
+    if(progressEl) progressEl.style.width = `${pct}%`;
+    
     updateSpoolSizes(pct / 100);
 });
 
-tapeAudio.addEventListener('ended', () => ejectCassette());
+tapeAudio.addEventListener('ended', () => {
+    playMechanicalSFX('clunk');
+    setTimeout(() => {
+        currentTapeIndex = (currentTapeIndex + 1) % cuevaTapePlaylist.length;
+        loadTapeTrack(currentTapeIndex);
+        playTape(); // Auto-play siguiente
+    }, 800);
+});
 
 function formatTapeTime(seconds) {
     if (isNaN(seconds)) return "00:00";
@@ -1605,30 +1517,63 @@ function loadTapeTrack(index) {
     currentTapeIndex = index;
     const track = cuevaTapePlaylist[index];
     tapeAudio.src = track.file;
-    tapeAudio.playbackRate = parseFloat(document.getElementById('tape-pitch-select').value);
-    document.getElementById('cassette-title-display').innerText = track.title;
-    document.getElementById('deck-song-name').innerText = track.title;
-    document.getElementById('direct-track-input').value = index + 1;
-    document.getElementById('active-cassette').className = `cassette-body ${track.skin}`;
+    tapeAudio.playbackRate = parseFloat(document.getElementById('tape-pitch-select')?.value || 1.0);
+    
+    const titleEl = document.getElementById('cassette-title-display');
+    const deckNameEl = document.getElementById('deck-song-name');
+    if(titleEl) titleEl.innerText = track.title;
+    if(deckNameEl) deckNameEl.innerText = track.title;
+    
+    const inputEl = document.getElementById('direct-track-input');
+    if(inputEl) inputEl.value = index + 1;
+    
+    const cassetteEl = document.getElementById('active-cassette');
+    if(cassetteEl) cassetteEl.className = `cassette-body ${track.skin}`;
+    
     resetTapeCounter();
 }
 
 function playTape() {
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     if (!tapeAudio.src) loadTapeTrack(0);
+    
+    initTapeAudioContext();
     tapeAudio.play();
+    if (hissNode) hissNode.start();
+    
     isTapePlaying = true;
-    document.getElementById('deck-door').className = 'deck-door-chamber playing';
+    
+    const door = document.getElementById('deck-door');
+    if(door) door.className = 'deck-door-chamber playing tape-deck-glow';
+    
     document.querySelectorAll('.piano-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-tape-play').classList.add('active');
+    const playBtn = document.getElementById('btn-tape-play');
+    if(playBtn) playBtn.classList.add('active');
+    
+    // Activar animación de carretes
+    const spoolLeft = document.getElementById('spool-left');
+    const spoolRight = document.getElementById('spool-right');
+    if(spoolLeft) spoolLeft.classList.add('reel-spinning-left');
+    if(spoolRight) spoolRight.classList.add('reel-spinning-right');
+    
     startCounter();
-    startVUMeters();
+    startRealVUMeters();
     playMechanicalSFX('click');
 }
 
 function pauseTape() {
     tapeAudio.pause();
+    if (hissNode) hissNode.stop(); // Detener ruido de cinta
+    
     isTapePlaying = false;
-    document.getElementById('deck-door').className = 'deck-door-chamber';
+    const door = document.getElementById('deck-door');
+    if(door) door.className = 'deck-door-chamber';
+    
+    const spoolLeft = document.getElementById('spool-left');
+    const spoolRight = document.getElementById('spool-right');
+    if(spoolLeft) spoolLeft.classList.remove('reel-spinning-left');
+    if(spoolRight) spoolRight.classList.remove('reel-spinning-right');
+    
     stopCounter();
     playMechanicalSFX('click');
 }
@@ -1636,27 +1581,55 @@ function pauseTape() {
 function stopTape() {
     tapeAudio.pause();
     tapeAudio.currentTime = 0;
+    if (hissNode) hissNode.stop();
+    
     isTapePlaying = false;
-    document.getElementById('deck-door').className = 'deck-door-chamber';
+    const door = document.getElementById('deck-door');
+    if(door) door.className = 'deck-door-chamber';
+    
+    const spoolLeft = document.getElementById('spool-left');
+    const spoolRight = document.getElementById('spool-right');
+    if(spoolLeft) spoolLeft.classList.remove('reel-spinning-left');
+    if(spoolRight) spoolRight.classList.remove('reel-spinning-right');
+    
     resetTapeCounter();
     stopCounter();
     playMechanicalSFX('clunk');
+    
+    // Resetear agujas VU
+    const leftNeedle = document.getElementById('vu-left');
+    const rightNeedle = document.getElementById('vu-right');
+    if(leftNeedle) leftNeedle.style.transform = `rotate(-30deg)`;
+    if(rightNeedle) rightNeedle.style.transform = `rotate(-30deg)`;
 }
 
 function ejectCassette() {
     stopTape();
     playMechanicalSFX('eject');
     const chamber = document.getElementById('deck-door');
-    chamber.classList.add('ejecting');
+    if(chamber) chamber.classList.add('ejecting');
+    
     setTimeout(() => {
         currentTapeIndex = (currentTapeIndex + 1) % cuevaTapePlaylist.length;
         loadTapeTrack(currentTapeIndex);
-        setTimeout(() => chamber.classList.remove('ejecting'), 300);
+        setTimeout(() => {
+            if(chamber) chamber.classList.remove('ejecting');
+        }, 300);
     }, 500);
 }
 
-function fastForwardTape() { if (tapeAudio.src) { tapeAudio.currentTime += 10; playMechanicalSFX('whir'); } }
-function rewindTape() { if (tapeAudio.src) { tapeAudio.currentTime -= 10; playMechanicalSFX('whir'); } }
+function fastForwardTape() { 
+    if (tapeAudio.src) { 
+        tapeAudio.currentTime = Math.min(tapeAudio.duration, tapeAudio.currentTime + 10); 
+        playMechanicalSFX('whir'); 
+    } 
+}
+function rewindTape() { 
+    if (tapeAudio.src) { 
+        tapeAudio.currentTime = Math.max(0, tapeAudio.currentTime - 10); 
+        playMechanicalSFX('whir'); 
+    } 
+}
 
 function startCounter() {
     stopCounter();
@@ -1664,19 +1637,26 @@ function startCounter() {
         if (isTapePlaying) {
             tapeCounter++;
             const str = String(tapeCounter % 1000).padStart(3, '0');
-            document.getElementById('counter-d1').innerText = str[0];
-            document.getElementById('counter-d2').innerText = str[1];
-            document.getElementById('counter-d3').innerText = str[2];
+            const d1 = document.getElementById('counter-d1');
+            const d2 = document.getElementById('counter-d2');
+            const d3 = document.getElementById('counter-d3');
+            if(d1) d1.innerText = str[0];
+            if(d2) d2.innerText = str[1];
+            if(d3) d3.innerText = str[2];
         }
     }, 1000);
 }
 
 function stopCounter() { if (counterInterval) clearInterval(counterInterval); }
+
 function resetTapeCounter() {
     tapeCounter = 0;
-    document.getElementById('counter-d1').innerText = '0';
-    document.getElementById('counter-d2').innerText = '0';
-    document.getElementById('counter-d3').innerText = '0';
+    const d1 = document.getElementById('counter-d1');
+    const d2 = document.getElementById('counter-d2');
+    const d3 = document.getElementById('counter-d3');
+    if(d1) d1.innerText = '0';
+    if(d2) d2.innerText = '0';
+    if(d3) d3.innerText = '0';
 }
 
 function updateSpoolSizes(pct) {
@@ -1688,13 +1668,27 @@ function updateSpoolSizes(pct) {
     if (sRight) { sRight.style.width = `${rightSize}px`; sRight.style.height = `${rightSize}px`; }
 }
 
-function startVUMeters() {
-    if (!isTapePlaying) return;
+// ¡VU METERS REALES CON WEB AUDIO API!
+function startRealVUMeters() {
+    if (!isTapePlaying || !analyser) return;
+    
+    analyser.getByteFrequencyData(dataArray);
+    
+    // Promedio de frecuencias bajas (graves) para la aguja izquierda
+    const leftAvg = dataArray.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
+    // Promedio de frecuencias altas (agudos) para la aguja derecha
+    const rightAvg = dataArray.slice(10, 20).reduce((a, b) => a + b, 0) / 10;
+    
+    // Mapear 0-255 a un rango de -30 a 30 grados
+    const leftDeg = (leftAvg / 255) * 60 - 30;
+    const rightDeg = (rightAvg / 255) * 60 - 30;
+    
     const leftNeedle = document.getElementById('vu-left');
     const rightNeedle = document.getElementById('vu-right');
-    if (leftNeedle) leftNeedle.style.transform = `rotate(${Math.floor(Math.random() * 60) - 30}deg)`;
-    if (rightNeedle) rightNeedle.style.transform = `rotate(${Math.floor(Math.random() * 60) - 30}deg)`;
-    requestAnimationFrame(startVUMeters);
+    if (leftNeedle) leftNeedle.style.transform = `rotate(${leftDeg}deg)`;
+    if (rightNeedle) rightNeedle.style.transform = `rotate(${rightDeg}deg)`;
+    
+    requestAnimationFrame(startRealVUMeters);
 }
 
 function playMechanicalSFX(type) {
@@ -1703,10 +1697,38 @@ function playMechanicalSFX(type) {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain); gain.connect(ctx.destination);
-        if (type === 'click') { osc.frequency.value = 180; gain.gain.setValueAtTime(0.08, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04); osc.start(); osc.stop(ctx.currentTime + 0.04); }
-        else if (type === 'eject') { osc.frequency.value = 320; gain.gain.setValueAtTime(0.12, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18); osc.start(); osc.stop(ctx.currentTime + 0.18); }
+        
+        if (type === 'click') { 
+            osc.frequency.value = 180; 
+            gain.gain.setValueAtTime(0.08, ctx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04); 
+            osc.start(); osc.stop(ctx.currentTime + 0.04); 
+        }
+        else if (type === 'eject') { 
+            osc.frequency.value = 320; 
+            gain.gain.setValueAtTime(0.12, ctx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18); 
+            osc.start(); osc.stop(ctx.currentTime + 0.18); 
+        }
+        else if (type === 'clunk') {
+            osc.frequency.value = 100;
+            osc.type = 'square';
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            osc.start(); osc.stop(ctx.currentTime + 0.1);
+        }
+        else if (type === 'whir') {
+            osc.frequency.value = 400;
+            osc.type = 'sawtooth';
+            gain.gain.setValueAtTime(0.05, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+            osc.start(); osc.stop(ctx.currentTime + 0.15);
+        }
     } catch(e) {}
 }
+
+// Cargar primera pista al iniciar (sin reproducir)
+loadTapeTrack(0);
 
 /* ================================================================
    MÓDULO 15: RELOJ SUPREMO + GEO IP + ANTI-ESTRÉS
