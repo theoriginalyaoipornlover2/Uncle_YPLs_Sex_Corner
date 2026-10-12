@@ -4,18 +4,68 @@
 const titleLine1 = "YAOI PORN LOVER'S";
 const titleLine2 = "CAVE OF PLEASURE";
 const palettes = [
-    { name: "Dorado Metálico", class: "palette-gold", colors: null },
-    { name: "Plata Brillante", class: "palette-silver", colors: null },
-    { name: "Arcoíris Fluido", class: "palette-rainbow", colors: null },
-    { name: "Bandera LGBT+", colors: ["#e40303", "#ff8c00", "#ffed00", "#008026", "#004dff", "#750787"] },
-    { name: "Bandera Lesbiana", colors: ["#d52d00", "#ef7627", "#ff9a56", "#ffffff", "#d162a4", "#b55690", "#a30262"] },
-    { name: "Bandera Pansexual", colors: ["#ff218c", "#ffd800", "#21b1ff"] },
-    { name: "Bandera Transgender", colors: ["#5bcefa", "#f5abb9", "#ffffff", "#f5abb9", "#5bcefa"] },
-    { name: "Bandera Bisexual", colors: ["#d60270", "#d60270", "#9b4f96", "#0038a8", "#0038a8"] },
-    { name: "Bandera No-Binaria", colors: ["#fcf434", "#ffffff", "#9c59d1", "#2c2c2c"] },
-    { name: "Bandera Asexual", colors: ["#000000", "#a3a3a3", "#ffffff", "#800080"] }
+    // --- 🏳️‍🌈 BANDERAS & DIVERSIDAD (1-10) ---
+    { name: "LGBT+ Clásica", colors: ["#e40303", "#ff8c00", "#ffed00", "#008026", "#004dff", "#750787"], special: "Orgullo en 6 franjas" },
+    { name: "Lesbiana", colors: ["#d52d00", "#ef7627", "#ff9a56", "#ffffff", "#d162a4", "#b55690", "#a30262"], special: "Tonos cálidos y rosados" },
+    { name: "Transgender", colors: ["#5bcefa", "#f5abb9", "#ffffff", "#f5abb9", "#5bcefa"], special: "Azul, rosa y blanco puro" },
+    { name: "Bisexual", colors: ["#d60270", "#9b4f96", "#0038a8"], special: "Rosa, lavanda y azul real" },
+    { name: "Pansexual", colors: ["#ff218c", "#ffd800", "#21b1ff"], special: "Rosa, amarillo y cian" },
+    { name: "No-Binaria", colors: ["#fcf434", "#ffffff", "#9c59d1", "#2c2c2c"], special: "Amarillo, blanco, púrpura y negro" },
+    { name: "Asexual", colors: ["#000000", "#a3a3a3", "#ffffff", "#800080"], special: "Negro, gris, blanco y morado" },
+    { name: "Genderfluid", colors: ["#ff75a2", "#ffffff", "#be18d6", "#000000", "#333ebd"], special: "Fluidez en 5 tonos" },
+    { name: "Intersexual", colors: ["#ffd800", "#7902aa"], special: "Amarillo y púrpura en círculo" },
+    { name: "Polysexual", colors: ["#f1028b", "#00d7ff", "#3c8700"], special: "Rosa, azul y verde" },
+
+    // --- 🐾 PERSONAJES PATREON & FURRIES (Con texturas) (11-25) ---
+    { name: "Shadow", colors: ["#000000", "#e60012", "#ffffff", "#333333"], special: "Pelaje oscuro con estrías rojas" },
+    { name: "Fang", colors: ["#800080", "#ffffff", "#ffd700", "#4b0082"], special: "Pelaje morado y sombrero de cuero" },
+    { name: "Mordecai", colors: ["#0033cc", "#ffffff", "#000000", "#6699ff"], special: "Plumaje azul brillante" },
+    { name: "King of Dinosaurs", colors: ["#228b22", "#8b4513", "#ff0000", "#ffd700"], special: "Escamas verdes y rugido dorado" },
+    { name: "Amy Rose", colors: ["#ff1493", "#ff0000", "#ffffff", "#ffb6c1"], special: "Pelaje rosa suave y lazo" },
+    { name: "Zavok", colors: ["#8b0000", "#000000", "#ffd700", "#ff4500"], special: "Armadura robótica roja y negra" },
+    { name: "Pepsiman", colors: ["#004b93", "#c8102e", "#ffffff", "#c0c0c0"], special: "Traje de látex plateado y azul" },
+    { name: "Senpai FNF", colors: ["#ffb7c5", "#87ceeb", "#ffffff", "#ff69b4"], special: "Piel melocotón y cabello pastel" },
+    { name: "Yagami Iori", colors: ["#ff0000", "#4b0082", "#000000", "#800000"], special: "Cabello rojo fuego y aura púrpura" },
+    { name: "Kaito", colors: ["#0047ab", "#ffffff", "#000000", "#87cefa"], special: "Bufanda azul larga y brillante" },
+    { name: "Yanhu", colors: ["#ff4500", "#ff0000", "#ffd700", "#8b0000"], special: "Pelaje anaranjado con detalles de fuego" },
+    { name: "Elliot Builder", colors: ["#ffff00", "#00a2ff", "#00ff00", "#ff0000"], special: "Piel de plástico amarillo clásico" },
+    { name: "Builderman", colors: ["#ffff00", "#0000ff", "#ff0000", "#00ff00"], special: "Camisa azul y sonrisa de bloques" },
+    { name: "Bacon Hair", colors: ["#8b4513", "#4682b4", "#ffd700", "#f5deb3"], special: "Cabello texturizado marrón" },
+    { name: "C00lkidd", colors: ["#ff0000", "#000000", "#00ff00", "#ffffff"], special: "Hoodie rojo con ojos brillantes" },
+
+    // --- 🦸‍♂️ DC COMICS & HÉROES (Con texturas) (26-30) ---
+    { name: "Batman", colors: ["#000000", "#1a1a1a", "#ffd700", "#2c3e50"], special: "Capa negra mate y cinturón dorado" },
+    { name: "Superman", colors: ["#003D7C", "#F2C80F", "#B22222", "#FFFFFF"], special: "Capa roja ondeante y pecho brillante" },
+    { name: "Harley Quinn", colors: ["#ff0000", "#0000ff", "#ffffff", "#000000"], special: "Diamantes rojos y azules" },
+    { name: "Joker", colors: ["#ffffff", "#00ff00", "#ff0000", "#4b0082"], special: "Piel blanca, cabello verde y sonrisa" },
+    { name: "Nightwing", colors: ["#000080", "#000000", "#00bfff", "#ffffff"], special: "Traje azul nocturno con líneas negras" },
+
+    // --- 💻 ESTÉTICAS YEYO, CÓDIGO & CULTURA (31-40) ---
+    { name: "Yeyo Supremo", colors: ["#ffd700", "#bf00ff", "#39ff14", "#ffffff"], special: "Aura dorada y energía púrpura" },
+    { name: "Leo Kasper", colors: ["#01cdfe", "#ff71ce", "#05ffa1", "#1a1a1a"], special: "Código matrix y neón rosa" },
+    { name: "Cloud Strife", colors: ["#f4d03f", "#5b2c6f", "#1abc9c", "#2c3e50"], special: "Cabello rubio esponjoso y espada" },
+    { name: "Argentina Scaloneta", colors: ["#75aadb", "#ffffff", "#f6b40e", "#000000"], special: "Textura de bandera y brillo de copa" },
+    { name: "Vaporwave Sunset", colors: ["#ff0055", "#ff5500", "#ffaa00", "#ffdd00", "#ff00aa"], special: "Degradado cálido de los 80s" },
+    { name: "Cyberpunk 2077", colors: ["#ff00ff", "#00ffff", "#ffff00", "#ff0099", "#00ff99"], special: "Neón amarillo y cian eléctrico" },
+    { name: "Matrix Code", colors: ["#00ff00", "#00cc00", "#009900", "#00ff41", "#39ff14"], special: "Lluvia de caracteres verdes" },
+    { name: "Dorado Metálico", class: "palette-gold", colors: null, special: "Brillo metálico reflectante" },
+    { name: "Plata Brillante", class: "palette-silver", colors: null, special: "Acero pulido futurista" },
+    { name: "Arcoíris Fluido", class: "palette-rainbow", colors: null, special: "Espectro de luz en movimiento" },
+
+    // --- 🐺 EXTRAS FURRY & TEMÁTICOS (41-45) ---
+    { name: "Zephyr V2", colors: ["#f0f8ff", "#00bfff", "#ffd700", "#ffffff"], special: "Plumaje blanco y detalles celestes" },
+    { name: "Splendid", colors: ["#0000ff", "#ff0000", "#ffff00", "#ffffff"], special: "Capa azul y pecho con estrella" },
+    { name: "Protogen", colors: ["#000000", "#00ff00", "#00ffff", "#ffffff"], special: "Visor LED brillante y pelaje sintético" },
+    { name: "Dragón Furry", colors: ["#800080", "#00ff00", "#ffd700", "#ff0000"], special: "Escamas iridiscentes y alas" },
+    { name: "Lobo Furry", colors: ["#808080", "#c0c0c0", "#ffffff", "#ffff00"], special: "Pelaje gris plateado y ojos amarillos" }
 ];
 let currentPaletteIndex = 0;
+
+// Nuevo: Colores para cambio individual de cada letra
+const individualColors = [
+    "#ffffff", "#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#0000ff", 
+    "#4b0082", "#9400d3", "#ffd700", "#ff1493", "#00ffff", "#39ff14", "#ff00ff"
+];
 
 function build3DTitle() {
     const container = document.getElementById('title-container');
@@ -36,6 +86,29 @@ function appendLetters(text, parentElement) {
         const span = document.createElement('span');
         span.className = 'char-3d';
         span.innerText = char === ' ' ? '\u00A0' : char;
+        
+        // Inicializa contador de color para cada letra
+        span.dataset.colorIndex = 0;
+
+        // Click individual en cada letra
+        span.addEventListener('click', (e) => {
+            e.stopPropagation(); // ⚠️ Evita que el click cambie toda la paleta
+            
+            let currentIndex = parseInt(span.dataset.colorIndex);
+            let nextIndex = (currentIndex + 1) % individualColors.length;
+            let newColor = individualColors[nextIndex];
+
+            // Aplica color y sombra a esta letra específica
+            span.style.color = newColor;
+            span.style.textShadow = `0 1px 0 #111, 0 2px 0 #000, 0 0 12px ${newColor}`;
+            span.dataset.colorIndex = nextIndex;
+
+            // Sonido opcional
+            if (typeof sfx !== 'undefined') {
+                sfx.playTone(600 + (nextIndex * 40), 'sine', 0.05);
+            }
+        });
+
         parentElement.appendChild(span);
     }
 }
@@ -43,18 +116,32 @@ function appendLetters(text, parentElement) {
 function applyCurrentPalette() {
     const container = document.getElementById('title-container');
     const pal = palettes[currentPaletteIndex];
-    document.getElementById('palette-name').innerText = `PALETA: ${pal.name}`;
+    
+    // Muestra el nombre Y la descripción especial
+    const specialText = pal.special ? ` ✦ [${pal.special}]` : '';
+    document.getElementById('palette-name').innerText = `PALETA: ${pal.name}${specialText}`;
     document.getElementById('hud-scheme').innerText = pal.name.split(' ')[0].toUpperCase();
+    
     container.className = 'title-3d';
+    container.classList.remove('palette-gold', 'palette-silver', 'palette-rainbow');
+    
     const allChars = container.querySelectorAll('.char-3d');
+    
     if (pal.class) {
         container.classList.add(pal.class);
-        allChars.forEach(c => { c.style.color = ''; c.style.textShadow = ''; });
+        allChars.forEach(c => { 
+            c.style.color = ''; 
+            c.style.textShadow = ''; 
+            c.dataset.colorIndex = 0;
+        });
     } else if (pal.colors) {
         allChars.forEach((c, index) => {
             const color = pal.colors[index % pal.colors.length];
             c.style.color = color;
             c.style.textShadow = `0 1px 0 #111, 0 2px 0 #000, 0 0 12px ${color}`;
+            
+            const foundIndex = individualColors.indexOf(color);
+            c.dataset.colorIndex = foundIndex !== -1 ? foundIndex : 0;
         });
     }
 }
@@ -75,7 +162,6 @@ titleWrapper.addEventListener('click', () => {
     checkAchievement('diversity_explorer');
     if (currentPaletteIndex === 3) checkAchievement('lgbt_pride');
 });
-
 /* ================================================================
    MÓDULO 2: SISTEMA DE LOGROS
    ================================================================ */
