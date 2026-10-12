@@ -2079,6 +2079,334 @@ if (fileInput) {
 // Inicializar primera pista al cargar la página (sin reproducir)
 loadTapeTrack(0);
 
+/* ================================================================
+   MÓDULO 15: CHRONOS & ZEN ULTIMATE EDITION (RELOJ + GEO + ANTI-ESTRÉS)
+   ================================================================ */
+
+// 1. INYECCIÓN DE CSS HIPER-DETALLADO
+const ultraClockCSS = `
+    @keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 10px #05ffa1; } 50% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 30px #05ffa1, 0 0 60px #ff71ce; } }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+    @keyframes neon-pulse { 0%, 100% { text-shadow: 0 0 5px currentColor; } 50% { text-shadow: 0 0 15px currentColor, 0 0 25px currentColor; } }
+    @keyframes zen-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    
+    .theme-matrix { color: #00ff41 !important; text-shadow: 0 0 5px #00ff41; font-family: 'Courier New', monospace; }
+    .theme-binary { color: #01cdfe !important; font-family: 'Courier New', monospace; letter-spacing: 3px; }
+    .theme-yeyo { color: #ff71ce !important; text-shadow: 0 0 10px #ff71ce, 0 0 20px #01cdfe; animation: neon-pulse 2s infinite; }
+    
+    .clock-smooth-seconds { transition: transform 0.1s cubic-bezier(0.4, 2.08, 0.55, 0.44); }
+    .zen-mode-active { animation: zen-bg 15s ease infinite; background: linear-gradient(-45deg, #a8e6cf, #dcedc1, #ffd3b6, #ffaaa5, #a8e6cf) !important; background-size: 400% 400% !important; }
+    .zen-mode-active * { color: #2d3436 !important; text-shadow: none !important; border-color: #636e72 !important; box-shadow: none !important; }
+    
+    .breathing-circle { width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle, #05ffa1, transparent); margin: 10px auto; transition: all 4s ease-in-out; }
+    .breathing-in { animation: breathe 4s ease-in-out infinite; }
+    .stress-btn-pop { transform: scale(0.92); transition: transform 0.05s; }
+    .world-clock-item { font-size: 0.8rem; padding: 2px 0; border-bottom: 1px dashed rgba(255,255,255,0.2); display: flex; justify-content: space-between; }
+`;
+const clockStyle = document.createElement("style");
+clockStyle.innerText = ultraClockCSS;
+document.head.appendChild(clockStyle);
+
+let clockTheme = 'vaporwave';
+let stressClicks = 0;
+let zenModeActive = false;
+let sessionStart = Date.now();
+
+// Variables para Cronómetro
+let stopwatchRunning = false;
+let stopwatchTime = 0;
+let stopwatchInterval = null;
+
+// Variables para ASMR (Ruido Blanco/Marrón)
+let asmrCtx, asmrNode, asmrGain;
+
+// 2. MOTOR DE RELOJ SUPREMO (60 FPS + MUNDIAL + CRONÓMETRO)
+function setClockTheme(theme, event) {
+    clockTheme = theme;
+    const box = document.getElementById('clock-display-box');
+    const views = ['digital-clock-view', 'analog-clock-view', 'binary-clock-view', 'world-clock-view', 'stopwatch-view'];
+    
+    document.querySelectorAll('.clk-mode-btn').forEach(btn => btn.classList.remove('active'));
+    if (event && event.target) event.target.classList.add('active');
+    
+    if (box) box.className = `clock-display-screen theme-${theme}`;
+    
+    views.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (id === `${theme}-clock-view` || (theme === 'digital' && id === 'digital-clock-view')) ? 'block' : 'none';
+    });
+    
+    if (typeof sfx !== 'undefined') sfx.playClick();
+}
+
+function updateClockLogic() {
+    const now = new Date();
+    const hrs = String(now.getHours()).padStart(2, '0');
+    const mins = String(now.getMinutes()).padStart(2, '0');
+    const secs = String(now.getSeconds()).padStart(2, '0');
+    const ms = String(now.getMilliseconds()).padStart(3, '0');
+    
+    // Digital
+    const timeText = document.getElementById('clock-time-text');
+    if (timeText) timeText.innerText = clockTheme === 'matrix' ? `${hrs}:${mins}:${secs}` : `${hrs}:${mins}:${secs}:${ms}`;
+    
+    const dateText = document.getElementById('clock-date-text');
+    if (dateText) dateText.innerText = now.toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }).toUpperCase();
+
+    // Binario
+    const binaryText = document.getElementById('binary-time-text');
+    if (binaryText && clockTheme === 'binary') {
+        const toBin = (num) => Number(num).toString(2).padStart(8, '0');
+        binaryText.innerText = `H:${toBin(hrs)} M:${toBin(mins)} S:${toBin(secs)}`;
+    }
+
+    // Mundial
+    updateWorldClocks(now);
+
+    // Analógico (Suave a 60fps)
+    const secDeg = ((now.getSeconds() + now.getMilliseconds() / 1000) / 60) * 360;
+    const minDeg = ((now.getMinutes() + now.getSeconds() / 60) / 60) * 360;
+    const hrDeg = ((now.getHours() % 12 + now.getMinutes() / 60) / 12) * 360;
+    
+    const secHand = document.getElementById('second-hand');
+    if (secHand) { secHand.style.transform = `rotate(${secDeg}deg)`; secHand.style.transformOrigin = "50% 50%"; }
+    const minHand = document.getElementById('minute-hand');
+    if (minHand) minHand.setAttribute('transform', `rotate(${minDeg} 50 50)`);
+    const hrHand = document.getElementById('hour-hand');
+    if (hrHand) hrHand.setAttribute('transform', `rotate(${hrDeg} 50 50)`);
+
+    // Tiempo de Sesión
+    const sessionEl = document.getElementById('session-time-display');
+    if (sessionEl) {
+        const diff = Math.floor((Date.now() - sessionStart) / 1000);
+        const sM = Math.floor(diff / 60);
+        const sS = diff % 60;
+        sessionEl.innerText = `TIEMPO EN LA CUEVA: ${sM}m ${sS}s`;
+    }
+
+    requestAnimationFrame(updateClockLogic);
+}
+updateClockLogic();
+
+function updateWorldClocks(now) {
+    const cities = {
+        'Buenos Aires': { offset: -3, el: 'wc-ba' },
+        'Tokyo': { offset: 9, el: 'wc-tk' },
+        'New York': { offset: -4, el: 'wc-ny' },
+        'Liberty City': { offset: -4, el: 'wc-lc' } // Easter egg
+    };
+    
+    for (const [city, data] of Object.entries(cities)) {
+        const el = document.getElementById(data.el);
+        if (el) {
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const cityTime = new Date(utc + (3600000 * data.offset));
+            el.innerText = `${city}: ${String(cityTime.getHours()).padStart(2,'0')}:${String(cityTime.getMinutes()).padStart(2,'0')}`;
+        }
+    }
+}
+
+// 3. CRONÓMETRO INTEGRADO
+function toggleStopwatch() {
+    const btn = document.getElementById('stopwatch-btn');
+    if (stopwatchRunning) {
+        clearInterval(stopwatchInterval);
+        stopwatchRunning = false;
+        if(btn) btn.innerText = "▶ INICIAR";
+    } else {
+        stopwatchRunning = true;
+        if(btn) btn.innerText = "⏸ PAUSAR";
+        stopwatchInterval = setInterval(() => {
+            stopwatchTime++;
+            const m = String(Math.floor(stopwatchTime / 60)).padStart(2, '0');
+            const s = String(stopwatchTime % 60).padStart(2, '0');
+            const ms = String(Math.floor((stopwatchTime % 1) * 100)).padStart(2, '0');
+            const display = document.getElementById('stopwatch-display');
+            if(display) display.innerText = `${m}:${s}.${ms}`;
+        }, 10);
+    }
+}
+function resetStopwatch() {
+    clearInterval(stopwatchInterval);
+    stopwatchRunning = false;
+    stopwatchTime = 0;
+    const display = document.getElementById('stopwatch-display');
+    const btn = document.getElementById('stopwatch-btn');
+    if(display) display.innerText = "00:00.00";
+    if(btn) btn.innerText = "▶ INICIAR";
+}
+
+// 4. GEO-RASTREO HACKER + SUPLANTACIÓN
+const fakeLocations = [
+    { ip: "192.168.YE.YO", loc: "Cueva Secreta del Yeyo, Subsuelo", isp: "CAVE_NET_PROXY", flag: "🏴‍☠️" },
+    { ip: "127.0.0.LOVE", loc: "Corazón del Servidor, Matrix", isp: "NEBUCHADNEZZAR ISP", flag: "🕶️" },
+    { ip: "85.90.SC.AL", loc: "HQ La Scaloneta, Ezeiza", isp: "AFA Fiber Optic", flag: "🇦🇷" },
+    { ip: "69.42.0.69", loc: "Area 51, Zona Furry", isp: "Alien Wave Net", flag: "👽" }
+];
+let spoofIndex = 0;
+
+async function fetchUserGeoData() {
+    const statusEl = document.getElementById('clock-ip-status');
+    if (statusEl) statusEl.innerText = '📡 TRIANGULANDO SATÉLITES...';
+    
+    try {
+        await new Promise(r => setTimeout(r, 600)); // Delay dramático
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data.ip && !window.spoofedIP) {
+            const ipEl = document.getElementById('user-ip-display');
+            const locEl = document.getElementById('user-location-display');
+            const ispEl = document.getElementById('user-isp-display');
+            const flagEl = document.getElementById('user-flag');
+            
+            if(ipEl) ipEl.innerText = data.ip;
+            if(locEl) locEl.innerText = `${data.city}, ${data.region}, ${data.country_name}`;
+            if(ispEl) ispEl.innerText = `ISP: ${data.org || 'Desconocido'}`;
+            if(statusEl) statusEl.innerText = '🟢 OBJETIVO FIJADO';
+            if (data.country_code && flagEl) {
+                flagEl.innerHTML = `<img src="https://flagcdn.com/24x18/${data.country_code.toLowerCase()}.png" alt="flag" style="vertical-align:middle; border-radius:2px;">`;
+            }
+            if (data.latitude && data.longitude) fetchWeather(data.latitude, data.longitude);
+        }
+    } catch (err) {
+        applySpoofedIP(0); // Fallback épico
+    }
+}
+
+function toggleSpoofIP() {
+    window.spoofedIP = true;
+    spoofIndex = (spoofIndex + 1) % fakeLocations.length;
+    applySpoofedIP(spoofIndex);
+    if (typeof sfx !== 'undefined') sfx.playTone(800, 'square', 0.1);
+}
+
+function applySpoofedIP(index) {
+    const fake = fakeLocations[index];
+    const ipEl = document.getElementById('user-ip-display');
+    const locEl = document.getElementById('user-location-display');
+    const ispEl = document.getElementById('user-isp-display');
+    const flagEl = document.getElementById('user-flag');
+    const statusEl = document.getElementById('clock-ip-status');
+    const weatherEl = document.getElementById('user-weather-display');
+
+    if(ipEl) ipEl.innerText = fake.ip;
+    if(locEl) locEl.innerText = fake.loc;
+    if(ispEl) ispEl.innerText = `ISP: ${fake.isp}`;
+    if(flagEl) flagEl.innerHTML = `<span style="font-size:1.5rem">${fake.flag}</span>`;
+    if(statusEl) statusEl.innerText = '🛡️ MODO STEALTH / SPOOFING';
+    if(weatherEl) weatherEl.innerText = '22°C 🌧️ (Clima de Código)';
+}
+
+async function fetchWeather(lat, lon) {
+    try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const wData = await res.json();
+        if (wData.current_weather) {
+            const temp = Math.round(wData.current_weather.temperature);
+            const wind = wData.current_weather.windspeed;
+            const weatherEl = document.getElementById('user-weather-display');
+            const windEl = document.getElementById('user-wind-display');
+            if(weatherEl) weatherEl.innerText = `${temp}°C 🌤️`;
+            if(windEl) windEl.innerText = `💨 ${wind} km/h`;
+        }
+    } catch (e) {
+        const weatherEl = document.getElementById('user-weather-display');
+        if(weatherEl) weatherEl.innerText = '24°C ☀️';
+    }
+}
+fetchUserGeoData();
+
+// 5. PROTOCOLO ANTI-ESTRÉS & ASMR (EL NÚCLEO ZEN)
+const stressComments = [
+    "Eso pibe... dale con ganas.", "El Yeyo aprueba tu spameo.", "¿Ya te sentís más relajado?",
+    "¡Cuidado que vas a romper el botón!", "Nivel de rabia bajando al 50%...", "¡Eso es rock, pibe!",
+    "Respirá... la cueva te protege.", "Los bugs no pueden con vos.", "Modo Zen cargando: 25%...",
+    "Modo Zen cargando: 50%...", "Modo Zen cargando: 75%...", "¡CASI LO LOGRÁS, HERMANO!"
+];
+
+function initASMR() {
+    if (!asmrCtx) {
+        asmrCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bufferSize = 2 * asmrCtx.sampleRate;
+        const buffer = asmrCtx.createBuffer(1, bufferSize, asmrCtx.sampleRate);
+        const output = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            output[i] = (lastOut + (0.02 * white)) / 1.02; // Ruido marrón (más suave, tipo lluvia)
+            lastOut = output[i];
+            output[i] *= 3.5; 
+        }
+        asm rNode = asmrCtx.createBufferSource();
+        asm rNode.buffer = buffer;
+        asm rNode.loop = true;
+        asm rGain = asmrCtx.createGain();
+        asm rGain.gain.value = 0; // Empieza apagado
+        asm rNode.connect(asm rGain);
+        asm rGain.connect(asmrCtx.destination);
+        asm rNode.start();
+    }
+}
+let lastOut = 0;
+let asmrPlaying = false;
+
+function toggleASMR() {
+    initASMR();
+    asmrPlaying = !asmrPlaying;
+    const btn = document.getElementById('asmr-btn');
+    if (asmrPlaying) {
+        asm rGain.gain.setTargetAtTime(0.05, asmrCtx.currentTime, 0.1); // Fade in suave
+        if(btn) { btn.innerText = "🎧 ASMR: ON (Lluvia Digital)"; btn.classList.add('active'); }
+    } else {
+        asm rGain.gain.setTargetAtTime(0, asmrCtx.currentTime, 0.1); // Fade out
+        if(btn) { btn.innerText = "🎧 ASMR: OFF"; btn.classList.remove('active'); }
+    }
+}
+
+const stressBtn = document.getElementById('anti-stress-btn');
+if (stressBtn) {
+    stressBtn.addEventListener('click', () => {
+        stressClicks++;
+        stressBtn.classList.add('stress-btn-pop');
+        setTimeout(() => stressBtn.classList.remove('stress-btn-pop'), 100);
+        
+        const badge = document.getElementById('stress-counter-badge');
+        if (badge) badge.innerText = `(${stressClicks} Clicks)`;
+        
+        const commentIndex = Math.min(Math.floor(stressClicks / 5), stressComments.length - 1);
+        const commentEl = document.getElementById('stress-comment');
+        if (commentEl) {
+            commentEl.style.opacity = 0;
+            setTimeout(() => {
+                commentEl.innerText = `"${stressComments[commentIndex]}"`;
+                commentEl.style.opacity = 1;
+            }, 150);
+        }
+        
+        if (typeof sfx !== 'undefined') sfx.playTone(300 + (stressClicks * 10), 'sine', 0.05);
+        
+        // HITO 50: MODO ZEN GLOBAL
+        if (stressClicks === 50 && !zenModeActive) {
+            zenModeActive = true;
+            document.body.classList.add('zen-mode-active');
+            showAchievementToast({ icon: '🧘‍♂️', title: 'MAESTRO ZEN', desc: 'La Cueva ahora es paz pura. Colores suavizados.' });
+            if (typeof sfx !== 'undefined') sfx.playAchievement();
+        }
+        
+        // HITO 100: BENDICIÓN DEL YEYO
+        if (stressClicks === 100) {
+            showAchievementToast({ icon: '👑', title: 'BENDICIÓN DEL YEYO', desc: 'Has alcanzado la iluminación digital máxima.' });
+            if (commentEl) {
+                commentEl.innerText = "\"El Yeyo sonríe. Eres uno con el código.\"";
+                commentEl.style.color = "#ffd700";
+                commentEl.style.fontWeight = "bold";
+                commentEl.style.fontSize = "1.1rem";
+                commentEl.style.animation = "neon-pulse 1s infinite";
+            }
+        }
+    });
+}
+
 
 /* ================================================================
    MÓDULO 16: SIDEBAR TERMINAL OS MULTI-ARQUITECTURA
