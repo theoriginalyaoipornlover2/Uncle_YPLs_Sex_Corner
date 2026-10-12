@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yaoi Porn Lover's Cave of Pleasure - 3D Edition</title>
+    
+    <!-- ✅ CSS: Rutas relativas (sin la barra / al inicio) -->
+    <link rel="stylesheet" href="css/base.css">
+    
+    <!-- Si separaste más archivos CSS, agrégalos aquí en este orden: -->
+    <!-- <link rel="stylesheet" href="css/layout.css"> -->
+    <!-- <link rel="stylesheet" href="css/components.css"> -->
+    <!-- <link rel="stylesheet" href="css/animations.css"> -->
+</head>
+<body class="sfw-mode">
+
+    <!-- INTRO / PANTALLA PRINCIPAL TERMINAL KASPER -->
+    <div id="kasper-terminal-overlay">
+        <div class="crt-scanline"></div>
+        <div id="terminal-content">
+            <div id="boot-sequence"></div>
+            <div id="interactive-prompt" style="display: none; margin-top: 15px;">
+                <div id="terminal-banner">
+                    --------------------------------------------------<br>
+                    TERMINAL KASPER v3.01 - VAPORWAVE BIOS<br>
+                    Sistema operativo: DOUZOZ 7 (2007 Original edition)<br>
+                    <span class="error-msg">SYSTEM ERROR: Copia de OS inexistente o no autorizada. Por favor pague con una mamada.</span><br>
+                    --------------------------------------------------<br>
+                    Escribe 'help' para ver la lista de comandos disponibles.<br>&nbsp;
+                </div>
+                <div id="command-history"></div>
+                <div class="input-line">
+                    <span class="prompt-symbol">KASPER:\DOUZOZ7></span>
+                    <input type="text" id="terminal-input" autofocus autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTAINER DE APAGADO -->
+    <div id="douzoz-shutdown-screen">
+        <div class="shutdown-dialog">
+            <div class="windows-flag-icon">❖</div>
+            <div class="shutdown-text">DOUZOZ 7</div>
+            <div class="shutdown-subtext">Shutting you up now...</div>
+        </div>
+    </div>
+
+    <div class="scanline-overlay"></div>
+
+    <!-- TICKER INFORMATIVO -->
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <div class="ticker-item"><span>MODO ACTUAL:</span> <span id="mode-text-display">SFW (SEGURO)</span></div>
+            <div class="ticker-item"><span>LOGROS UNLOCKED:</span> <span id="achievements-count">0/8</span></div>
+            <div class="ticker-item"><span>BANDERA:</span> PRESIONA EL TÍTULO 3D PARA CAMBIAR DIVERSITY COLOR</div>
+            <div class="ticker-item"><span>SECRET CODE:</span> PRUEBA INGRESA 'YEYO' EN EL TRANSMISOR</div>
+        </div>
+    </div>
+
+    <!-- HEADER & TÍTULO 3D -->
+    <header class="header-container">
+        <div class="status-badge-container">
+            <div class="badge btn-nsfw-toggle" id="nsfw-toggle-btn">🔥 NSFW: OFF</div>
+            <div class="badge" id="open-achievements-btn">🏆 LOGROS (<span id="badge-ach-num">0</span>)</div>
+            <div class="badge"><span style="color:var(--neon-green)">●</span> ONLINE</div>
+        </div>
+        <div class="title-3d-wrapper" id="title-3d-btn">
+            <div class="title-3d" id="title-container"></div>
+        </div>
+        <div class="palette-name-tag" id="palette-name">PALETA: DORADO METÁLICO</div>
+    </header>
+
+    <!-- RELOJ SUPREMO -->
+    <div class="supreme-clock-card" id="clock-card-main">
+        <div class="clock-header-bar">
+            <div class="clock-mode-selector">
+                <button class="clk-mode-btn active" onclick="setClockTheme('vaporwave')">📼 VAPOR</button>
+                <button class="clk-mode-btn" onclick="setClockTheme('cyberpunk')">⚡ CYBER</button>
+                <button class="clk-mode-btn" onclick="setClockTheme('analog')">🕰️ ANALOG</button>
+                <button class="clk-mode-btn" onclick="setClockTheme('matrix')">📟 MATRIX</button>
+            </div>
+            <div style="font-family: monospace; font-size: 0.7rem; color: var(--gold);" id="clock-ip-status">🔍 RASTREANDO IP...</div>
+        </div>
+
+        <div class="clock-display-screen theme-vaporwave" id="clock-display-box">
+            <div id="digital-clock-view">
+                <div id="clock-time-text">00:00:00</div>
+                <div id="clock-date-text">CARGANDO FECHA...</div>
+            </div>
+            <div id="analog-clock-view" style="display: none;">
+                <svg viewBox="0 0 100 100" class="analog-svg">
+                    <circle cx="50" cy="50" r="45" class="clock-face" />
+                    <line x1="50" y1="50" x2="50" y2="20" id="hour-hand" class="hand hour" />
+                    <line x1="50" y1="50" x2="50" y2="10" id="minute-hand" class="hand minute" />
+                    <line x1="50" y1="50" x2="50" y2="5" id="second-hand" class="hand second" />
+                    <circle cx="50" cy="50" r="3" fill="var(--gold)" />
+                </svg>
+            </div>
+
+            <div class="clock-geo-panel">
+                <div class="geo-info-left">
+                    <div class="ip-row">
+                        <span id="user-flag">🌐</span>
+                        <span id="user-ip-display" class="ip-highlight">000.000.000.000</span>
+                    </div>
+                    <div id="user-location-display" class="geo-text">Detectando coordenadas...</div>
+                </div>
+                <div class="geo-info-right">
+                    <div id="user-weather-display" class="weather-text">--°C ☁️</div>
+                    <div id="user-isp-display" class="isp-text">ISP: Buscando...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="anti-stress-panel">
+            <button id="anti-stress-btn" class="stress-btn">
+                💥 BOTÓN ANTI-ESTRÉS <span id="stress-counter-badge">(0 Clicks)</span>
+            </button>
+            <div id="stress-comment" class="stress-comment-box">
+                "Presioná el botón si la vida o el Yeyo te tienen estresado..."
+            </div>
+        </div>
+    </div>
+
+    <div class="system-hud-card">
+        <div style="color:var(--gold); font-size:0.85rem; border-bottom:1px solid rgba(212,175,55,0.3); padding-bottom:4px; display:flex; justify-content:space-between;">
+            <span>MONITOR DE LA CUEVA</span>
+            <span style="color:var(--neon-green)">ACTIVE</span>
+        </div>
+        <div class="hud-metrics">
+            <div class="metric-box">
+                <div class="metric-label">MODO FONDO</div>
+                <div class="metric-val" id="hud-bg-mode">SFW SAFE</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">COLOR SCHEME</div>
+                <div class="metric-val" id="hud-scheme">GOLD</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">TIEMPO EN CUEVA</div>
+                <div class="metric-val" id="hud-timer">00:00</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-label">EXP LEVEL</div>
+                <div class="metric-val" id="hud-level">LVL 1</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTONERA PRINCIPAL -->
+    <main class="button-grid-v2">
+        <a href="ea99.html" class="grid-card-btn gold-master-btn" id="btn-exitos">
+            <div class="cartoon-shimmer"></div>
+            <div class="top-right-sparkle">✨</div>
+            <div class="floating-wealth w-1">🪙</div>
+            <div class="floating-wealth w-2">💰</div>
+            <div class="floating-wealth w-3">₿</div>
+            <div class="floating-wealth w-4">🏆</div>
+            <div class="card-content">
+                <div class="card-icon">👑</div>
+                <div class="card-text-group">
+                    <span class="card-title">GRANDES ÉXITOS</span>
+                    <span class="card-subtitle">Edits Legendarios & Masterpieces</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="chat.html" class="grid-card-btn silver-cyber-btn">
+            <div class="card-content">
+                <div class="card-icon">💬</div>
+                <div class="card-text-group">
+                    <span class="card-title">EL_CHAT</span>
+                    <span class="card-subtitle">Conexión P2P & Transmisiones</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="zombie.html" class="grid-card-btn arcade-neon-btn">
+            <div class="card-content">
+                <div class="card-icon">📖</div>
+                <div class="card-text-group">
+                    <span class="card-title">EL ARCADE</span>
+                    <span class="card-subtitle">Zombie Survival & Retos</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="Donaciones.html" class="grid-card-btn donation-btn">
+            <div class="card-content">
+                <div class="card-icon">❤️</div>
+                <div class="card-text-group">
+                    <span class="card-title">DONACIONES</span>
+                    <span class="card-subtitle">Apoyá el Proyecto del Yeyo</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="Dante.html" class="grid-card-btn donation-btn">
+            <div class="card-content">
+                <div class="card-icon">❤️</div>
+                <div class="card-text-group">
+                    <span class="card-title">DONACIONES</span>
+                    <span class="card-subtitle">Apoyá el Proyecto del Yeyo</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- PLACEHOLDERS -->
+        <div class="grid-card-btn locked-btn" onclick="triggerLockedSound('Laboratorio de IA')">
+            <div class="lock-stripe">CAUTION // EN CONSTRUCCIÓN</div>
+            <div class="card-content">
+                <div class="card-icon">🔒</div>
+                <div class="card-text-group">
+                    <span class="card-title">IA YEYO-BOT</span>
+                    <span class="card-subtitle">Progreso: [45%] • Bloqueado</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-card-btn locked-btn" onclick="triggerLockedSound('Cine 4K Virtual')">
+            <div class="lock-stripe">CAUTION // EN CONSTRUCCIÓN</div>
+            <div class="card-content">
+                <div class="card-icon">🍿</div>
+                <div class="card-text-group">
+                    <span class="card-title">CUEVA CINEMA 4K</span>
+                    <span class="card-subtitle">Progreso: [12%] • Próximamente</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-card-btn locked-btn" onclick="triggerLockedSound('Mercado de Renders')">
+            <div class="lock-stripe">CAUTION // EN CONSTRUCCIÓN</div>
+            <div class="card-content">
+                <div class="card-icon">🛍️</div>
+                <div class="card-text-group">
+                    <span class="card-title">BLACK MARKET RENDERS</span>
+                    <span class="card-subtitle">Progreso: [80%] • En Mantenimiento</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-card-btn locked-btn" onclick="triggerLockedSound('Sala de Trofeos 3D')">
+            <div class="lock-stripe">CAUTION // EN CONSTRUCCIÓN</div>
+            <div class="card-content">
+                <div class="card-icon">🏛️</div>
+                <div class="card-text-group">
+                    <span class="card-title">MUSEO DE YEYO 3D</span>
+                    <span class="card-subtitle">Progreso: [05%] • Acceso Denegado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FUN FACTS MODAL -->
+        <div class="sldg-feature-wrapper">
+            <button class="sldg-trigger-btn" id="sldgBtn" aria-label="Abrir Fun facts de leo kasper">
+                <span class="btn-glitch-text">Fun facts de leo kasper</span>
+                <span class="btn-tag">[SHITPOSTING_SLDG.exe]</span>
+            </button>
+            <div class="sldg-modal-overlay" id="sldgModal" role="dialog" aria-hidden="true">
+                <div class="sldg-modal-card">
+                    <div class="sldg-modal-header">
+                        <div class="window-controls">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span class="window-title">LEO_KASPER_ARCHIVES_v2.012.png</span>
+                        <button class="close-modal-btn" id="closeSldgBtn">&times;</button>
+                    </div>
+                    <div class="sldg-modal-body">
+                        <div class="rage-comic-banner">
+                            <span class="rage-text-top">LE ME...</span>
+                            <h3>PROGRAMANDO UN MONOLITO FRONTEND A LAS 4 AM</h3>
+                            <span class="rage-text-bottom">ALL THE SINGLE BUGS... ALL THE SINGLE BUGS</span>
+                        </div>
+                        <ul class="facts-list">
+                            <li class="fact-item"><span class="fact-index">#01</span><p>Capaz de debugear código en producción mientras escucha "Heroes" de David Bowie sin parpadear una sola vez.</p></li>
+                            <li class="fact-item"><span class="fact-index">#02</span><p>Su relación con VS Code se define legalmente como matrimonio en tres jurisdicciones distintas.</p></li>
+                            <li class="fact-item"><span class="fact-index">#03</span><p>Inventor anónimo del parche mental para ignorar advertencias de deprecación en npm install.</p></li>
+                        </ul>
+                        <div class="sldg-footer-stamp"><span>EL PRRO SUPREMO APPROVED // 2012-2026</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- HALL OF FAME -->
+    <section style="width: 100%; max-width: 1100px; margin-bottom: 2.5rem;">
+        <div style="background: linear-gradient(135deg, rgba(15, 52, 39, 0.9), rgba(5, 12, 8, 0.95)); border: 2px solid var(--gold); border-radius: 12px; padding: 20px; box-shadow: 0 0 25px rgba(212, 175, 55, 0.2); backdrop-filter: blur(10px);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="color: var(--gold); font-family: monospace; letter-spacing: 2px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    <span>✨</span> HALL OF FAME: YEYO'S EDITS
+                </h3>
+                <button id="btn-vhs-glitch" style="background: #111; color: var(--neon-green); border: 1px solid var(--neon-green); border-radius: 4px; padding: 4px 10px; font-family: monospace; cursor: pointer; font-size: 0.75rem;">
+                    📼 MODO VHS: OFF
+                </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem;">
+                <div class="yeyo-holo-card" data-title="Masterpiece Edit Vol. 1">
+                    <div class="holo-inner">
+                        <div class="holo-shine"></div>
+                        <div style="font-size: 2.5rem; margin-bottom: 8px;">🎬</div>
+                        <div style="color: var(--gold); font-weight: bold; font-size: 0.9rem;">YEYO EDIT #01</div>
+                        <div style="color: #aaa; font-size: 0.75rem; margin-top: 4px;">Edición Limitada • Neón FX</div>
+                    </div>
+                </div>
+                <div class="yeyo-holo-card" data-title="Cyber Cave Remix">
+                    <div class="holo-inner">
+                        <div class="holo-shine"></div>
+                        <div style="font-size: 2.5rem; margin-bottom: 8px;">⚡</div>
+                        <div style="color: var(--gold); font-weight: bold; font-size: 0.9rem;">YEYO EDIT #02</div>
+                        <div style="color: #aaa; font-size: 0.75rem; margin-top: 4px;">Ultra Sync • 60 FPS</div>
+                    </div>
+                </div>
+                <div class="yeyo-holo-card" data-title="The Yaoi Masterwork">
+                    <div class="holo-inner">
+                        <div class="holo-shine"></div>
+                        <div style="font-size: 2.5rem; margin-bottom: 8px;">🔥</div>
+                        <div style="color: var(--gold); font-weight: bold; font-size: 0.9rem;">YEYO EDIT #03</div>
+                        <div style="color: #aaa; font-size: 0.75rem; margin-top: 4px;">Colección Legendaria</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CINTA DE NOTICIAS VICE CITY -->
+    <div class="vice-news-ticker-wrap">
+        <div class="vice-badge">🌴 CUEVA NEWS 🌴</div>
+        <div class="vice-ticker-content">
+            <div class="vice-ticker-text">
+                🚨 ÚLTIMO MOMENTO: Estado de YaoiLover y DOUZOZ: en tumbaleja disfrutando el Sol y unos Bailes exóticos 🌴🍹 // ⚡ CUEVA OS V2.0 ACTIVADO: Pager con señales P2P en línea // 🪙 BITCOIN ALCANZA MÁXIMOS EN EL MERCADO NEGRO DEL YEYO // 🎮 ARCADE ZOMBIE ACTUALIZADO CON NUEVOS RETOS //
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGER MULTI-SKIN -->
+    <aside class="pager-master-wrapper" id="pager-main-widget">
+        <div class="pager-skin-selector">
+            <span class="skin-label">SKIN:</span>
+            <button class="skin-btn active" onclick="setPagerSkin('gta3')">🎮 GTA 3</button>
+            <button class="skin-btn" onclick="setPagerSkin('argentina')">🇦🇷 ARGENTINA</button>
+            <button class="skin-btn" onclick="setPagerSkin('matrix')">📟 MATRIX</button>
+            <button class="skin-btn" onclick="setPagerSkin('classic')">📟 90s RETRO</button>
+        </div>
+        <div class="pager-chassis skin-gta3" id="pager-hardware">
+            <div class="pager-antenna"></div>
+            <div class="pager-led" id="pager-signal-led"></div>
+            <div class="pager-sticker" id="pager-sticker-slot">🚕</div>
+            <div class="pager-brand-text" id="pager-brand-display">LIBERTY CITY WIRELESS</div>
+            <div class="pager-lcd-screen backlight-on" id="pager-lcd-box">
+                <div class="lcd-top-bar">
+                    <span id="pager-status-msg">📡 SIGNAL: 100%</span>
+                    <span id="pager-skin-title">LC-PAGER</span>
+                    <span id="pager-time">00:00</span>
+                </div>
+                <div class="lcd-main-display" id="pager-display-text">[LCPD]: "Atención a todas las unidades en Portland Harbor..."</div>
+                <div class="lcd-bottom-bar">
+                    <span id="pager-msg-counter">MSG: 1/5</span>
+                    <span id="pager-battery-text">🔋 98%</span>
+                </div>
+            </div>
+            <div class="pager-controls-row">
+                <button class="pager-phys-btn" onclick="pagerPrevMsg()">◀ ANTERIOR</button>
+                <button class="pager-phys-btn btn-light" onclick="togglePagerLight()">💡 LUZ</button>
+                <button class="pager-phys-btn btn-alert" onclick="playPagerAlert()">🔔 ALERTA</button>
+                <button class="pager-phys-btn" onclick="pagerNextMsg()">SIGUIENTE ▶</button>
+            </div>
+            <div class="pager-keypad-box">
+                <div class="keypad-header">
+                    <input type="text" id="pager-code-input" maxlength="4" placeholder="CÓDIGO (Ej: 911)" readonly>
+                    <button onclick="sendPagerCode()" class="keypad-send-btn">SEND</button>
+                </div>
+                <div class="keypad-grid">
+                    <button onclick="pressPagerKey('1')">1</button>
+                    <button onclick="pressPagerKey('2')">2</button>
+                    <button onclick="pressPagerKey('3')">3</button>
+                    <button onclick="pressPagerKey('4')">4</button>
+                    <button onclick="pressPagerKey('5')">5</button>
+                    <button onclick="pressPagerKey('6')">6</button>
+                    <button onclick="pressPagerKey('7')">7</button>
+                    <button onclick="pressPagerKey('8')">8</button>
+                    <button onclick="pressPagerKey('9')">9</button>
+                    <button onclick="clearPagerKey()" class="keypad-clear-btn">C</button>
+                    <button onclick="pressPagerKey('0')">0</button>
+                    <button onclick="chargePagerBattery()" class="keypad-charge-btn">⚡</button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- TAPE DECK -->
+    <section class="tape-deck-wrapper" id="cueva-tape-deck">
+        <div class="deck-chassis">
+            <div class="deck-top-bar">
+                <div class="deck-brand">
+                    <span class="brand-logo">CUEVA</span>
+                    <span class="brand-model">TAPE DECK-9000 // HIGH-PRECISION MASTERING</span>
+                </div>
+                <div class="vumeter-box">
+                    <div class="vumeter"><div class="vumeter-needle" id="vu-left"></div><span class="vu-label">L</span></div>
+                    <div class="vumeter"><div class="vumeter-needle" id="vu-right"></div><span class="vu-label">R</span></div>
+                </div>
+                <div class="tape-counter-box">
+                    <span class="counter-digit" id="counter-d1">0</span>
+                    <span class="counter-digit" id="counter-d2">0</span>
+                    <span class="counter-digit" id="counter-d3">0</span>
+                    <button class="counter-reset-btn" onclick="resetTapeCounter()" title="Reset">⟲</button>
+                </div>
+            </div>
+            <div class="deck-door-chamber" id="deck-door">
+                <div class="cassette-body" id="active-cassette">
+                    <div class="cassette-label" id="cassette-label-box">
+                        <span class="cassette-side">A</span>
+                        <span class="cassette-title-text" id="cassette-title-display">TRACK 01 - CUEVA INTRO.MP3</span>
+                    </div>
+                    <div class="cassette-window">
+                        <div class="tape-reel reel-left" id="reel-left">
+                            <div class="tape-spool" id="spool-left"></div>
+                            <div class="spoke-hub"></div>
+                        </div>
+                        <div class="tape-bridge"></div>
+                        <div class="tape-reel reel-right" id="reel-right">
+                            <div class="tape-spool" id="spool-right"></div>
+                            <div class="spoke-hub"></div>
+                        </div>
+                    </div>
+                    <div class="cassette-bottom-holes">
+                        <div class="c-hole"></div><div class="c-hole"></div><div class="c-hole"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="tape-progress-container">
+                <div class="time-display-box">
+                    <span id="current-time-text">00:00</span>
+                    <span class="time-separator">/</span>
+                    <span id="total-duration-text">00:00</span>
+                </div>
+                <div class="progress-bar-wrapper" onclick="seekTapeProgress(event)">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                    <div class="progress-scrubber-head" id="scrubber-head"></div>
+                </div>
+            </div>
+            <div class="deck-info-display">
+                <div class="direct-select-box">
+                    <label>TRACK #:</label>
+                    <input type="number" id="direct-track-input" min="1" max="3" value="1" onchange="jumpToTrackNumber(this.value)">
+                </div>
+                <div class="track-marquee">
+                    <span id="deck-song-name">CARGANDO CINTA MAGNÉTICA...</span>
+                </div>
+                <div class="deck-pitch-box">
+                    <label>PITCH/SPEED:</label>
+                    <select id="tape-pitch-select" onchange="changeTapePitch(this.value)">
+                        <option value="0.8">0.8x (Slow)</option>
+                        <option value="1.0" selected>1.0x (Normal)</option>
+                        <option value="1.25">1.25x (Fast)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="piano-keys-row">
+                <button class="piano-btn key-eject" onclick="ejectCassette()">⏏ EJECT</button>
+                <button class="piano-btn key-rew" onclick="rewindTape()">◀◀ REW</button>
+                <button class="piano-btn key-play" id="btn-tape-play" onclick="playTape()">▶ PLAY</button>
+                <button class="piano-btn key-pause" onclick="pauseTape()">❚❚ PAUSE</button>
+                <button class="piano-btn key-stop" onclick="stopTape()">◼ STOP</button>
+                <button class="piano-btn key-ff" onclick="fastForwardTape()">▶▶ FF</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TOAST LOGRO -->
+    <div class="achievement-toast" id="achievement-toast">
+        <div class="toast-icon" id="toast-icon">🏆</div>
+        <div>
+            <div class="toast-title" id="toast-title">LOGRO DESBLOQUEADO</div>
+            <div class="toast-desc" id="toast-desc">Has iniciado tu aventura.</div>
+        </div>
+    </div>
+
+    <!-- MODAL LOGROS -->
+    <div class="modal-achievements" id="modal-achievements">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>🏆 LOGROS DE LA CUEVA</span>
+                <span style="cursor:pointer;" id="close-modal-btn">✖</span>
+            </div>
+            <div id="achievements-list-container"></div>
+        </div>
+    </div>
+
+    <!-- CANVAS PARTÍCULAS -->
+    <canvas id="particle-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 998;"></canvas>
+
+    <!-- CAVE SHELL -->
+    <div id="cave-shell" style="display: none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; background: rgba(5, 10, 8, 0.95); border: 2px solid var(--neon-green); border-radius: 8px; padding: 15px; font-family: monospace; z-index: 25000; box-shadow: 0 0 30px rgba(57, 255, 20, 0.4);">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--neon-green); padding-bottom: 5px; color: var(--neon-green); font-weight: bold;">
+            <span>CAVE_SHELL_v2.0.exe</span>
+            <span style="cursor: pointer;" onclick="document.getElementById('cave-shell').style.display='none'">[X]</span>
+        </div>
+        <div id="shell-output" style="height: 150px; overflow-y: auto; margin: 10px 0; color: #a3ffb0; font-size: 0.85rem;">
+            <div>> Sistema inicializado. Escribe 'help' para lista de comandos.</div>
+        </div>
+        <div style="display: flex; gap: 5px;">
+            <span style="color: var(--neon-green);">></span>
+            <input type="text" id="shell-input" style="flex-grow: 1; background: transparent; border: none; outline: none; color: #fff; font-family: monospace;" placeholder="Escribe un comando...">
+        </div>
+    </div>
+
+    <!-- SIDEBAR TERMINAL OS -->
+    <aside class="vm-aside-sidebar" id="vm-aside-root">
+        <button class="vm-aside-toggle" id="vm-aside-toggle-btn" title="Toggle Terminal OS [Alt+T]">
+            <span class="toggle-icon">⚡</span>
+            <span class="toggle-text">TERMINAL OS</span>
+        </button>
+        <div class="vm-aside-wrapper">
+            <header class="vm-aside-header">
+                <div class="vm-header-info">
+                    <span class="vm-aside-status"></span>
+                    <h3>YEYO-OS HYPERVISOR v4.0</h3>
+                </div>
+                <button class="vm-aside-close" id="vm-aside-close-btn">&times;</button>
+            </header>
+            <section class="vm-aside-os-selector">
+                <span class="selector-title">SELECCIONAR ARQUITECTURA:</span>
+                <div class="os-mini-list">
+                    <button class="os-mini-card active" data-os="douzoz98"><span class="os-num">01</span><span class="os-name">DOUZOZ 98'</span></button>
+                    <button class="os-mini-card" data-os="kasper64"><span class="os-num">02</span><span class="os-name">Kasper 64</span></button>
+                    <button class="os-mini-card" data-os="joylover10"><span class="os-num">03</span><span class="os-name">JoyLover 10</span></button>
+                    <button class="os-mini-card" data-os="yaoilover-mints"><span class="os-num">04</span><span class="os-name">YaoiLover Mints</span></button>
+                    <button class="os-mini-card os-locked" data-os="ultimate-44" disabled><span class="os-num">05</span><span class="os-name">YKL-DOUZOZ 44 [LOCK]</span></button>
+                </div>
+            </section>
+            <div class="vm-aside-viewport" id="vm-aside-viewport" data-theme="douzoz98">
+                <div class="crt-overlay"></div>
+                <div class="vm-aside-boot hidden" id="vm-aside-boot">
+                    <div class="boot-spinner"></div>
+                    <span id="vm-boot-label">CARGANDO SISTEMA...</span>
+                </div>
+                <div class="vm-aside-console">
+                    <div class="console-topbar" id="console-topbar">DOUZOZ_98_TTY1.SYS</div>
+                    <div class="console-output" id="aside-console-output"></div>
+                    <form class="console-form" id="aside-console-form">
+                        <span class="prompt-tag" id="aside-prompt-symbol">DOUZOZ:\></span>
+                        <input type="text" id="aside-console-input" autocomplete="off" spellcheck="false" placeholder="Escribe 'help' o 'zork'..." />
+                    </form>
+                </div>
+            </div>
+            <footer class="vm-aside-footer">
+                <span id="aside-clock">00:00:00</span>
+                <span class="aside-status-msg">PATREON: YEYO APPROVED</span>
+            </footer>
+        </div>
+    </aside>
+
+    <!-- ✅ JS: Al final del body, rutas relativas (sin la barra / al inicio) -->
+    <script src="js/main.js"></script>
+    
+    <!-- Si separaste más archivos JS, agrégalos aquí ANTES de main.js en orden de dependencia: -->
+    <!-- <script src="js/utils.js"></script> -->
+    <!-- <script src="js/audio-engine.js"></script> -->
+    <!-- <script src="js/achievements.js"></script> -->
+</body>
+</html>
